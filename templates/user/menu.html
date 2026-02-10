@@ -1,0 +1,24 @@
+
+{% block content %}
+<h2>Today's Menu</h2>
+{% for item in items %}
+  <div>
+    <b>{{ item.name }}</b> - ₹{{ item.price }}
+    <input type="number" min="1" value="1">
+  </div>
+{% endfor %}
+{% endblock %}
+<button onclick="addToCart({{ item.id }})">Add</button>
+
+<script>
+function addToCart(id){
+  fetch('/cart/add/',{
+    method:'POST',
+    headers:{
+      'X-CSRFToken':'{{ csrf_token }}',
+      'Content-Type':'application/x-www-form-urlencoded'
+    },
+    body:`item_id=${id}&qty=1`
+  })
+}
+</script>

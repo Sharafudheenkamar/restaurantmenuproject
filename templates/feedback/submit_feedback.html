@@ -1,0 +1,11 @@
+<h2>⭐ Give Feedback</h2>
+
+<p>Order ID: {{ view.order.id }}</p>
+<p>Table: {{ view.order.table.table_number }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <button type="submit">Submit Feedback</button>
+</form>

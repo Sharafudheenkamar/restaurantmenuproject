@@ -1,0 +1,22 @@
+<h2>💳 Make Payment</h2>
+
+<p><b>Table:</b> {{ order.table.table_number }}</p>
+<p><b>Total Amount:</b> ₹{{ amount }}</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  <label>
+    <input type="radio" name="method" value="UPI" checked> UPI
+  </label><br>
+
+  <label>
+    <input type="radio" name="method" value="CARD"> Card
+  </label><br>
+
+  <label>
+    <input type="radio" name="method" value="WALLET"> Wallet
+  </label><br><br>
+
+  <button type="submit">Pay Now</button>
+</form>

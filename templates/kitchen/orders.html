@@ -1,0 +1,20 @@
+<h2>🍳 Kitchen Orders</h2>
+
+{% for order in orders %}
+  <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px">
+    <h4>Table {{ order.table.table_number }}</h4>
+    <p>Status: <b>{{ order.status }}</b></p>
+
+    <ul>
+      {% for item in order.items.all %}
+        <li>{{ item.menu_item.name }} × {{ item.quantity }}</li>
+      {% endfor %}
+    </ul>
+
+    <a href="{% url 'update-order' order.id %}">
+      Update Status
+    </a>
+  </div>
+{% empty %}
+  <p>No active orders 🎉</p>
+{% endfor %}

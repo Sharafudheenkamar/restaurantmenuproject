@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Your Orders</h2>
+{% for order in object_list %}
+  <p>
+    Table {{ order.table.table_number }} -
+    Status: <b>{{ order.status }}</b>
+  </p>
+{% endfor %}
+{% endblock %}
+<p>Status: <span id="status">{{ order.status }}</span></p>
+
+<script>
+setInterval(()=>{
+  fetch('/order/status/{{ order.id }}/')
+    .then(res=>res.json())
+    .then(data=>{
+      document.getElementById('status').innerText = data.status;
+    })
+},3000);
+</script>
+
