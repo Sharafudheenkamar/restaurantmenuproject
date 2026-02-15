@@ -150,3 +150,5 @@ WEBPUSH_SETTINGS = {
     "VAPID_ADMIN_EMAIL": "admin@restaurant.com"
 }
 SITE_ID = 1
+LOGIN_REDIRECT_URL = "menu"
+LOGOUT_REDIRECT_URL = "accounts:login"

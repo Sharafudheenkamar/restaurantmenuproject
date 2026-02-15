@@ -4,10 +4,12 @@ from django.shortcuts import render
 
 from django.views.generic import TemplateView
 from accounts.mixins import RoleRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class AdminDashboardView(RoleRequiredMixin, TemplateView):
-    allowed_roles = ['admin']
-    template_name = 'admin/dashboard.html'
+
+class AdminDashboardView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
+    template_name = "administrator/dashboard.html"
+    allowed_roles = ["admin"]
 
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -60,3 +62,167 @@ class AdminAnalyticsView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
         )
 
         return context
+    
+#menulist
+from django.views.generic import ListView
+from menu.models import MenuItem
+
+class MenuManageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    model = MenuItem
+    template_name = "administrator/menu_list.html"
+    allowed_roles = ["admin"]
+
+#Add Item
+
+from django.views import View
+from django.shortcuts import redirect
+from menu.models import Category
+
+class MenuCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request):
+        return render(request,"administrator/menu_add.html",
+            {"categories": Category.objects.all()}
+        )
+
+    def post(self, request):
+        MenuItem.objects.create(
+            name=request.POST["name"],
+            price=request.POST["price"],
+            category_id=request.POST["category"],
+            is_available="available" in request.POST
+        )
+        return redirect("admin-menu")
+#Edit Menu
+class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, pk):
+        item = MenuItem.objects.get(id=pk)
+        return render(request,"administrator/menu_edit.html",
+            {"item": item, "categories": Category.objects.all()}
+        )
+
+    def post(self, request, pk):
+        item = MenuItem.objects.get(id=pk)
+        item.name = request.POST["name"]
+        item.price = request.POST["price"]
+        item.category_id = request.POST["category"]
+        item.is_available = "available" in request.POST
+        item.save()
+        return redirect("admin-menu")
+#Delete Menu
+
+class MenuDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, pk):
+        MenuItem.objects.get(id=pk).delete()
+        return redirect("admin-menu")
+#Qr generator view
+import qrcode
+from django.conf import settings
+from django.core.files import File
+from io import BytesIO
+from menu.models import Table
+
+class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, table_id):
+        table = Table.objects.get(id=table_id)
+
+        url = f"{request.build_absolute_uri('/')}menu/table/{table.uuid}/"
+
+        img = qrcode.make(url)
+        buffer = BytesIO()
+        img.save(buffer)
+
+        table.qr_code.save(
+            f"table_{table.number}.png",
+            File(buffer),
+            save=True
+        )
+
+        return redirect("admin-tables")
+#orders dasboard
+
+from orders.models import Order
+
+class OrdersDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    model = Order
+    template_name = "administrator/orders.html"
+    allowed_roles = ["admin"]
+    ordering = ["-created_at"]
+#Payments dashboard
+
+from payments.models import Payment
+
+class PaymentsDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    model = Payment
+    template_name = "administrator/payments.html"
+    allowed_roles = ["admin"]
+from accounts.models import User
+#Staff Management
+class StaffListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    model = User
+    template_name = "administrator/staff.html"
+    allowed_roles = ["admin"]
+
+    def get_queryset(self):
+        return User.objects.exclude(role="customer")
+    
+from django.views.generic import ListView, View
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from accounts.models import User
+from orders.models import Order
+from payments.models import Payment
+from accounts.mixins import RoleRequiredMixin
+class StaffListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    template_name = "administrator/staffs.html"
+    allowed_roles = ["admin"]
+    model = User
+
+    def get_queryset(self):
+        return User.objects.exclude(role__in=["customer", "admin"])
+
+class StaffCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request):
+        return render(request, "administrator/add_staff.html")
+
+    def post(self, request):
+        User.objects.create(
+            username=request.POST["username"],
+            password=make_password(request.POST["password"]),
+            role=request.POST["role"],
+            email=request.POST["email"]
+        )
+        return redirect("administrator:admin-staff")
+class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        return render(request, "administrator/edit_staff.html", {"staff": user})
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.role = request.POST["role"]
+        user.save()
+        return redirect("administrator:admin-staff")
+class StaffDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        return redirect("administrator:admin-staff")
+
+
+

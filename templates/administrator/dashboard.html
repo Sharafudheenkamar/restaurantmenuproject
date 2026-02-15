@@ -1,0 +1,17 @@
+<h1>Admin Dashboard</h1>
+<!-- Top Action Buttons -->
+<div style="margin-bottom:15px;">
+
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+
+<a href="{% url 'administrator:admin-menu' %}">Manage Menu</a><br>
+<a href="{% url 'administrator:admin-orders' %}">Orders</a><br>
+<a href="{% url 'administrator:admin-payments' %}">Payments</a><br>
+<a href="{% url 'administrator:admin-staff' %}">Staff</a><br>
+<a href="{% url 'administrator:admin-analytics' %}">Analytics</a><br>

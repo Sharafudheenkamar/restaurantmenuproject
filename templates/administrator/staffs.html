@@ -1,0 +1,38 @@
+<h2>Staff Management</h2>
+<!-- Top Action Buttons -->
+<div style="margin-bottom:15px;">
+    <!-- Back Button -->
+    <a href="{% url 'administrator:admin-staff' %}">
+        <button type="button">⬅ Back</button>
+    </a>
+
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+
+<a href="{% url 'administrator:add-staff' %}">Add Staff</a>
+
+<table border="1">
+<tr>
+<th>Username</th>
+<th>Email</th>
+<th>Role</th>
+<th>Actions</th>
+</tr>
+
+{% for user in object_list %}
+<tr>
+<td>{{ user.username }}</td>
+<td>{{ user.email }}</td>
+<td>{{ user.role }}</td>
+<td>
+<a href="{% url 'administrator:edit-staff' user.id %}">Edit</a>
+<a href="{% url 'administrator:delete-staff' user.id %}">Delete</a>
+</td>
+</tr>
+{% endfor %}
+</table>

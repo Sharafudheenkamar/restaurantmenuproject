@@ -1,0 +1,37 @@
+<h2>Edit Menu Item</h2>
+
+<!-- Top Action Buttons -->
+<div style="margin-bottom:15px;">
+    <!-- Back Button -->
+    <a href="{% url 'administrator:menu-list' %}">
+        <button type="button">⬅ Back</button>
+    </a>
+
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+<form method="post">
+{% csrf_token %}
+
+<input name="name" value="{{ item.name }}">
+<input name="price" value="{{ item.price }}">
+
+<select name="category">
+{% for c in categories %}
+<option value="{{ c.id }}" {% if c.id == item.category.id %}selected{% endif %}>
+{{ c.name }}
+</option>
+{% endfor %}
+</select>
+
+<label>
+    <input type="checkbox" name="available" {% if item.is_available %}checked{% endif %}>
+    Available
+</label>
+
+<button type="submit">Update</button>
+</form>

@@ -14,3 +14,12 @@ class MenuItem(models.Model):
 
     def __str__(self):
         return self.name
+import uuid
+
+class Table(models.Model):
+    number = models.IntegerField(unique=True)
+    qr_code = models.ImageField(upload_to="qr_codes/", blank=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return f"Table {self.number}"

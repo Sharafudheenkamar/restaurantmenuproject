@@ -5,10 +5,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Auth & Accounts
-    path('accounts/', include('accounts.urls')),
+    path('', include(('accounts.urls', 'accounts'), namespace='accounts')),
 
     # Menu & QR
-    path('', include('menu.urls')),
+    path('menu/', include('menu.urls')),
 
     # Cart
     path('cart/', include('cart.urls')),
@@ -24,6 +24,11 @@ urlpatterns = [
 
     # Web Push Notifications
     path('webpush/', include('webpush.urls')),
-    path('administrator/', include('administrator.urls')),
+
+    # Administrator
+    path('administrator/', include(('administrator.urls','administrator'),namespace='administrator')),
+
+    # Kitchen
+    # path('')
 
 ]

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant QR</title>
+    <style>
+        body{
+            font-family: Arial;
+            background:#f4f6f9;
+        }
+        .auth-container{
+            width:350px;
+            margin:80px auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,.1);
+        }
+        .form-group{
+            margin-bottom:15px;
+        }
+        .form-group input{
+            width:100%;
+            padding:10px;
+            border-radius:5px;
+            border:1px solid #ccc;
+        }
+        .btn{
+            width:100%;
+            padding:10px;
+            background:#28a745;
+            border:none;
+            color:white;
+            border-radius:5px;
+            cursor:pointer;
+        }
+        .btn:hover{
+            background:#218838;
+        }
+        .switch{
+            margin-top:15px;
+            text-align:center;
+        }
+        .profile-card{
+            width:350px;
+            margin:80px auto;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            text-align:center;
+        }
+        .logout-btn{
+            display:inline-block;
+            margin-top:20px;
+            padding:10px 20px;
+            background:red;
+            color:white;
+            text-decoration:none;
+            border-radius:5px;
+        }
+    </style>
+</head>
+
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>

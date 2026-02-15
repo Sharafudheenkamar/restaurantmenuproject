@@ -1,0 +1,37 @@
+<h2>Add Menu Item</h2>
+<!-- Top Action Buttons -->
+<div style="margin-bottom:15px;">
+    <!-- Back Button -->
+    <a href="{% url 'administrator:menu-list' %}">
+        <button type="button">⬅ Back</button>
+    </a>
+
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+
+<form method="post">
+{% csrf_token %}
+
+<label>Name</label>
+<input type="text" name="name"><br>
+
+<label>Price</label>
+<input type="number" step="0.01" name="price"><br>
+
+<label>Category</label>
+<select name="category">
+{% for c in categories %}
+<option value="{{ c.id }}">{{ c.name }}</option>
+{% endfor %}
+</select><br>
+
+<label>Available</label>
+<input type="checkbox" name="available"><br>
+
+<button>Add</button>
+</form>

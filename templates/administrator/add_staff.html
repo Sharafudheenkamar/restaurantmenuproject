@@ -1,0 +1,36 @@
+<h2>Add Staff</h2>
+<!-- Top Action Buttons -->
+<div style="margin-bottom:15px;">
+    <!-- Back Button -->
+    <a href="{% url 'administrator:admin-staff' %}">
+        <button type="button">⬅ Back</button>
+    </a>
+
+    <!-- Logout Button -->
+    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+
+<form method="post">
+{% csrf_token %}
+
+<label>Username</label>
+<input type="text" name="username"><br>
+
+<label>Email</label>
+<input type="email" name="email"><br>
+
+<label>Password</label>
+<input type="password" name="password"><br>
+
+<label>Role</label>
+<select name="role">
+<option value="kitchen">Kitchen</option>
+<option value="admin">Admin</option>
+</select><br>
+
+<button>Create Staff</button>
+</form>
