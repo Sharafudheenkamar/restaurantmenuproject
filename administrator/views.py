@@ -93,7 +93,7 @@ class MenuCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
             category_id=request.POST["category"],
             is_available="available" in request.POST
         )
-        return redirect("admin-menu")
+        return redirect("administrator:admin-menu")
 #Edit Menu
 class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
@@ -111,7 +111,7 @@ class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
         item.category_id = request.POST["category"]
         item.is_available = "available" in request.POST
         item.save()
-        return redirect("admin-menu")
+        return redirect("administrator:admin-menu")
 #Delete Menu
 
 class MenuDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
@@ -119,7 +119,7 @@ class MenuDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def get(self, request, pk):
         MenuItem.objects.get(id=pk).delete()
-        return redirect("admin-menu")
+        return redirect("administrator:admin-menu")
 #Qr generator view
 import qrcode
 from django.conf import settings
@@ -225,4 +225,143 @@ class StaffDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
         return redirect("administrator:admin-staff")
 
 
+from django.views.generic import TemplateView, View
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from accounts.mixins import RoleRequiredMixin
+from menu.models import Table, TableQR
 
+
+# LIST TABLES
+class AdminTableListView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
+    template_name = "administrator/tables.html"
+    allowed_roles = ["admin"]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tables"] = Table.objects.all().order_by("number")
+        context["qr_map"] = {
+            qr.table_id: qr for qr in TableQR.objects.select_related("table")
+        }
+        
+        return context
+
+
+# ADD TABLE
+class AddTableView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def post(self, request):
+        number = request.POST.get("number")
+        capacity = request.POST.get("capacity")
+
+        Table.objects.create(number=number, capacity=capacity)
+        return redirect("administrator:admin-tables")
+
+
+# DELETE TABLE
+class DeleteTableView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def post(self, request, pk):
+        Table.objects.get(id=pk).delete()
+        return redirect("administrator:admin-tables")
+from django.conf import settings
+from django.core.files.base import ContentFile
+
+def generate_qr_image(code):
+    
+    img = qrcode.make(url)
+    path = f"{settings.MEDIA_ROOT}/qr/{code}.png"
+    img.save(path)
+
+# GENERATE QR
+class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def post(self, request, pk):
+        table = get_object_or_404(Table, id=pk)
+        
+        qr_obj, created = TableQR.objects.get_or_create(table=table)
+
+        if not qr_obj.qr_image:
+            url = f"http://10.219.82.251:8000/login/?next=/menu/?table={table.number}"
+
+            
+            qr = qrcode.make(url)
+            # Create buffer (THIS WAS MISSING OR WRONG)
+            qr_buffer = BytesIO()
+            qr.save(qr_buffer, format="PNG")
+
+            # Create or get QR model
+            qr_obj, created = TableQR.objects.get_or_create(table=table)
+
+            # Save image
+            qr_obj.qr_image     .save(
+                f"table_{table.number}.png",
+                ContentFile(qr_buffer.getvalue()),
+                save=True
+            )
+        return redirect("administrator:admin-tables")
+
+from django.views import View
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from accounts.mixins import RoleRequiredMixin
+from menu.models import Category
+
+
+# LIST
+class CategoryListView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request):
+        categories = Category.objects.all().order_by("name")
+        return render(request, "administrator/categories/list.html", {
+            "categories": categories
+        })
+
+
+# CREATE
+class CategoryCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request):
+        return render(request, "administrator/categories/add.html")
+
+    def post(self, request):
+        name = request.POST.get("name")
+
+        if name:
+            Category.objects.create(name=name)
+
+        return redirect("administrator:category-list")
+
+
+# UPDATE
+class CategoryUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def get(self, request, pk):
+        category = get_object_or_404(Category, pk=pk)
+        return render(request, "administrator/categories/edit.html", {
+            "category": category
+        })
+
+    def post(self, request, pk):
+        category = get_object_or_404(Category, pk=pk)
+
+        category.name = request.POST.get("name")
+        category.save()
+
+        return redirect("administrator:category-list")
+
+
+# DELETE
+class CategoryDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
+    allowed_roles = ["admin"]
+
+    def post(self, request, pk):
+        category = get_object_or_404(Category, pk=pk)
+        category.delete()
+        return redirect("administrator:category-list")

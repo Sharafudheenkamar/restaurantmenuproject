@@ -16,6 +16,7 @@
             <label>Password</label>
             {{ form.password }}
         </div>
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
 
         <button type="submit" class="btn">Login</button>
 

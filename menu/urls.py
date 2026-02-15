@@ -4,7 +4,7 @@ from .views import TodayMenuView
 
 urlpatterns = [
     # QR Scan lands here
-    path('', TodayMenuView.as_view(), name='menu'),
+    path('', TodayMenuView.as_view(), name='menu-list'),
 
     # Offline / PWA API
     # path('menu/api/', menu_api, name='menu-api'),

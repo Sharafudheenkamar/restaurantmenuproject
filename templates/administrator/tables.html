@@ -1,0 +1,69 @@
+<h2>Table Management</h2>
+
+<a href="{% url 'administrator:admin-dashboard' %}">
+<button>⬅ Dashboard</button>
+</a>
+
+<hr>
+
+<h3>Add Table</h3>
+
+<form method="post" action="{% url 'administrator:add-table' %}">
+{% csrf_token %}
+<input name="number" placeholder="Table Number" required>
+<input name="capacity" placeholder="Capacity" required>
+<button>Add Table</button>
+</form>
+
+<hr>
+
+<h3>Existing Tables</h3>
+
+<table border="1" cellpadding="10">
+<tr>
+<th>No</th>
+<th>Capacity</th>
+<th>QR</th>
+<th>Actions</th>
+<th></th>
+</tr>
+
+{% for table in tables %}
+<tr>
+<td>{{ table.number }}</td>
+<td>{{ table.capacity }}</td>
+<td>
+    {% if table.qr_map and table.qr_map.qr_image %}
+        <img src="{{ table.qr_map.qr_image.url }}" width="120"><br>
+
+        <a href="{{ table.qr_map.qr_image.url }}" download>
+            ⬇ Download QR
+        </a>
+    {% else %}
+        Not generated
+    {% endif %}
+</td>
+
+<td>
+    {% if not table.qr_map %}
+        <form method="post" action="{% url 'administrator:generate-qr' table.id %}">
+            {% csrf_token %}
+            <button type="submit">Generate QR</button>
+        </form>
+    {% else %}
+        ✅ Generated
+    {% endif %}
+</td>
+
+<td>
+<!-- Delete -->
+<form method="post" action="{% url 'administrator:delete-table' table.id %}" style="display:inline;">
+{% csrf_token %}
+<button>Delete</button>
+</form>
+
+</td>
+</tr>
+{% endfor %}
+
+</table>

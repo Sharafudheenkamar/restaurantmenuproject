@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -8,7 +10,7 @@ urlpatterns = [
     path('', include(('accounts.urls', 'accounts'), namespace='accounts')),
 
     # Menu & QR
-    path('menu/', include('menu.urls')),
+    path('menu/', include(('menu.urls','menu'),namespace='menu')),
 
     # Cart
     path('cart/', include('cart.urls')),
@@ -32,3 +34,6 @@ urlpatterns = [
     # path('')
 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

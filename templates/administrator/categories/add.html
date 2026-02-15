@@ -1,0 +1,15 @@
+<h2>Add Category</h2>
+
+<a href="{% url 'administrator:category-list' %}">⬅ Back</a>
+
+<hr>
+
+<form method="post">
+{% csrf_token %}
+
+<label>Name</label><br>
+<input type="text" name="name" required><br><br>
+
+<button type="submit">Save</button>
+
+</form>
