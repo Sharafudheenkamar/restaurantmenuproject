@@ -1,22 +1,156 @@
-<h2>Staff Management</h2>
-<!-- Top Action Buttons -->
-<div style="margin-bottom:15px;">
-    <!-- Back Button -->
-    <a href="{% url 'administrator:admin-dashboard' %}">
-        <button type="button">Dashboard</button>
-    </a>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Staff Management</title>
 
-    <!-- Logout Button -->
-    <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
+<style>
+
+body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(-45deg,#1a0000,#330000,#000,#330000);
+    background-size:400% 400%;
+    animation:bgMove 10s ease infinite;
+    color:white;
+}
+
+@keyframes bgMove{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+.container{
+    width:95%;
+    max-width:1100px;
+    margin:40px auto;
+    padding:30px;
+    border-radius:18px;
+    backdrop-filter:blur(18px);
+    background:rgba(255,255,255,0.06);
+    box-shadow:0 0 40px rgba(255,0,0,.25);
+    animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(30px)}
+    to{opacity:1; transform:translateY(0)}
+}
+
+h2{
+    text-align:center;
+    margin-bottom:25px;
+    text-shadow:0 0 12px rgba(255,0,0,.7);
+}
+
+/* top buttons */
+.top-bar{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.top-btn{
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    margin:5px;
+    background:linear-gradient(45deg,#ff1744,#b71c1c);
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.top-btn:hover{
+    transform:scale(1.08);
+    box-shadow:0 0 20px red;
+}
+
+/* add staff */
+.add-btn{
+    display:block;
+    width:max-content;
+    margin:20px auto;
+    padding:12px 25px;
+    border-radius:12px;
+    background:linear-gradient(45deg,#ff1744,#b71c1c);
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.add-btn:hover{
+    transform:scale(1.1);
+    box-shadow:0 0 25px red;
+}
+
+/* table */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    background:rgba(255,0,0,.3);
+    padding:14px;
+    text-shadow:0 0 10px red;
+}
+
+td{
+    padding:14px;
+    text-align:center;
+    background:rgba(255,255,255,.05);
+}
+
+tr:hover td{
+    background:rgba(255,0,0,.12);
+    transition:.3s;
+}
+
+/* action links */
+.action{
+    padding:6px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:14px;
+    margin:2px;
+    display:inline-block;
+    color:white;
+    transition:.3s;
+}
+
+.edit{ background:#ff1744; }
+.edit:hover{ box-shadow:0 0 15px red; }
+
+.delete{ background:#222; }
+.delete:hover{ background:black; box-shadow:0 0 15px white; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h2>👨‍🍳 Staff Management</h2>
+
+<div class="top-bar">
+
+<a href="{% url 'administrator:admin-dashboard' %}">
+<button class="top-btn">Dashboard</button>
+</a>
+
+<form method="post" action="{% url 'accounts:logout' %}" style="display:inline;">
+{% csrf_token %}
+<button class="top-btn">Logout</button>
+</form>
+
 </div>
 
+<a href="{% url 'administrator:add-staff' %}" class="add-btn">＋ Add Staff</a>
 
-<a href="{% url 'administrator:add-staff' %}">Add Staff</a>
-
-<table border="1">
+<table>
 <tr>
 <th>Username</th>
 <th>Email</th>
@@ -30,9 +164,15 @@
 <td>{{ user.email }}</td>
 <td>{{ user.role }}</td>
 <td>
-<a href="{% url 'administrator:edit-staff' user.id %}">Edit</a>
-<a href="{% url 'administrator:delete-staff' user.id %}">Delete</a>
+<a href="{% url 'administrator:edit-staff' user.id %}" class="action edit">Edit</a>
+<a href="{% url 'administrator:delete-staff' user.id %}" class="action delete">Delete</a>
 </td>
 </tr>
 {% endfor %}
+
 </table>
+
+</div>
+
+</body>
+</html>

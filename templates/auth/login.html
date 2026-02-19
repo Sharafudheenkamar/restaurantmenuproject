@@ -1,30 +1,187 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
 
-<div class="auth-container">
-    <h2>Login</h2>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-    <form method="post" class="auth-form">
-        {% csrf_token %}
+<style>
 
-        <div class="form-group">
-            <label>Username</label>
-            {{ form.username }}
-        </div>
+body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    height:100vh;
+    overflow:hidden;
+    background: linear-gradient(135deg,#000000,#b71c1c,#ff1744);
+}
 
-        <div class="form-group">
-            <label>Password</label>
-            {{ form.password }}
-        </div>
-        <input type="hidden" name="next" value="{{ request.GET.next }}">
+/* floating food icons */
+.food{
+    position:absolute;
+    width:70px;
+    opacity:.9;
+    animation: float 14s linear infinite;
+}
+.food:nth-child(1){ left:10%; animation-delay:0s;}
+.food:nth-child(2){ left:80%; animation-delay:4s;}
+.food:nth-child(3){ left:55%; animation-delay:8s;}
+.food:nth-child(4){ left:30%; animation-delay:11s;}
 
-        <button type="submit" class="btn">Login</button>
+@keyframes float{
+    0%{top:110%; transform:rotate(0deg)}
+    100%{top:-20%; transform:rotate(360deg)}
+}
 
-        <p class="switch">
-            No account?
-            <a href="{% url 'accounts:signup' %}">Register</a>
-        </p>
-    </form>
+/* center wrapper */
+.wrapper{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    position:relative;
+    z-index:2;
+}
+
+/* card */
+.card{
+    width:340px;
+    padding:42px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter: blur(18px);
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    text-align:center;
+    animation: pop .9s ease;
+}
+
+@keyframes pop{
+    from{transform:scale(.7);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
+
+/* title */
+.title{
+    font-size:34px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:25px;
+    letter-spacing:2px;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow{
+    from{text-shadow:0 0 10px #fff,0 0 20px #ff1744;}
+    to{text-shadow:0 0 25px #fff,0 0 50px #b71c1c;}
+}
+
+/* inputs */
+.field{
+    margin-bottom:22px;
+    position:relative;
+}
+
+.field input{
+    width:100%;
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    font-size:15px;
+}
+
+.field label{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#ddd;
+    transition:.3s;
+    pointer-events:none;
+}
+
+.field input:focus + label,
+.field input:not(:placeholder-shown)+label{
+    top:-9px;
+    background:#ff1744;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:12px;
+    color:white;
+}
+
+/* button */
+.btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(45deg,#ff1744,#b71c1c);
+    color:#fff;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.35s;
+}
+
+.btn:hover{
+    transform:scale(1.06);
+    box-shadow:0 0 30px rgba(255,0,0,.8);
+}
+
+/* register link */
+.link{
+    margin-top:20px;
+    color:#fff;
+}
+
+.link a{
+    color:#ff8a80;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.link a:hover{
+    text-decoration:underline;
+}
+
+</style>
+</head>
+<body>
+
+<!-- floating icons -->
+<img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/5787/5787016.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/135/135763.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" class="food">
+
+<div class="wrapper">
+<form method="post" class="card">
+    {% csrf_token %}
+
+    <div class="title">🍗 LOGIN</div>
+
+    <div class="field">
+        <input type="text" name="username" required placeholder=" ">
+        <label>Username</label>
+    </div>
+
+    <div class="field">
+        <input type="password" name="password" required placeholder=" ">
+        <label>Password</label>
+    </div>
+
+    <button class="btn">Sign In</button>
+
+    <div class="link">
+        No account? <a href="{%url 'accounts:signup' %}">Register</a>
+    </div>
+
+</form>
 </div>
 
-{% endblock %}
+</body>
+</html>

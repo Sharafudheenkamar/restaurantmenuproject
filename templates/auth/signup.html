@@ -1,43 +1,191 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account</title>
 
-<div class="auth-container">
-    <h2>Create Account</h2>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-    <form method="post" class="auth-form">
-        {% csrf_token %}
+<style>
 
-        <div class="form-group">
-            <label>Username</label>
-            {{ form.username }}
-            {{ form.username.errors }}
-        </div>
+/* background */
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: linear-gradient(135deg,#000000,#b71c1c,#ff1744);
+    overflow:hidden;
+    position:relative;
+    font-family:'Poppins',sans-serif;
+}
 
-        <div class="form-group">
-            <label>Email</label>
-            {{ form.email }}
-            {{ form.email.errors }}
-        </div>
+/* floating icons */
+.food{
+    position:absolute;
+    width:70px;
+    opacity:.9;
+    animation: float 14s linear infinite;
+}
+.food:nth-child(1){ left:10%; animation-delay:0s;}
+.food:nth-child(2){ left:80%; animation-delay:4s;}
+.food:nth-child(3){ left:55%; animation-delay:8s;}
+.food:nth-child(4){ left:30%; animation-delay:11s;}
 
-        <div class="form-group">
-            <label>Password</label>
-            {{ form.password1 }}
-            {{ form.password1.errors }}
-        </div>
+@keyframes float{
+    0%{top:110%; transform:rotate(0deg)}
+    100%{top:-20%; transform:rotate(360deg)}
+}
 
-        <div class="form-group">
-            <label>Confirm Password</label>
-            {{ form.password2 }}
-            {{ form.password2.errors }}
-        </div>
+/* card */
+.auth-form{
+    width:360px;
+    padding:40px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter: blur(18px);
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    text-align:center;
+    animation: pop .9s ease;
+    z-index:2;
+}
 
-        <button type="submit" class="btn">Register</button>
+@keyframes pop{
+    from{transform:scale(.7);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
 
-        <p class="switch">
-            Already have account?
-            <a href="{% url 'accounts:login' %}">Login</a>
-        </p>
-    </form>
-</div>
+/* title */
+h2{
+    font-size:32px;
+    font-weight:700;
+    color:#fff;
+    margin-bottom:25px;
+    letter-spacing:2px;
+    animation: glow 2s ease-in-out infinite alternate;
+}
 
-{% endblock %}
+@keyframes glow{
+    from{text-shadow:0 0 10px #fff,0 0 20px #ff1744;}
+    to{text-shadow:0 0 25px #fff,0 0 50px #b71c1c;}
+}
+
+/* form groups */
+.form-group{
+    margin-bottom:20px;
+    text-align:left;
+}
+
+.form-group label{
+    color:#eee;
+    font-size:14px;
+    display:block;
+    margin-bottom:6px;
+}
+
+.form-group input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    outline:none;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    font-size:15px;
+}
+
+.form-group ul{
+    margin:5px 0 0;
+    padding:0;
+    list-style:none;
+    color:#ff8a80;
+    font-size:13px;
+}
+
+/* button */
+.btn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(45deg,#ff1744,#b71c1c);
+    color:#fff;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.35s;
+    margin-top:10px;
+}
+
+.btn:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 30px rgba(255,0,0,.8);
+}
+
+/* link */
+.switch{
+    margin-top:20px;
+    color:#fff;
+}
+
+.switch a{
+    color:#ff8a80;
+    text-decoration:none;
+    font-weight:600;
+}
+.switch a:hover{
+    text-decoration:underline;
+}
+
+</style>
+</head>
+<body>
+
+<!-- floating icons -->
+<img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/5787/5787016.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/135/135763.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" class="food">
+
+
+<form method="post" class="auth-form">
+    {% csrf_token %}
+
+    <h2>🍗 Create Account</h2>
+
+    <div class="form-group">
+        <label>Username</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+    </div>
+
+    <div class="form-group">
+        <label>Password</label>
+        {{ form.password1 }}
+        {{ form.password1.errors }}
+    </div>
+
+    <div class="form-group">
+        <label>Confirm Password</label>
+        {{ form.password2 }}
+        {{ form.password2.errors }}
+    </div>
+
+    <button type="submit" class="btn">Register</button>
+
+    <p class="switch">
+        Already have account?
+        <a href="{% url 'accounts:login' %}">Login</a>
+    </p>
+</form>
+
+</body>
+</html>

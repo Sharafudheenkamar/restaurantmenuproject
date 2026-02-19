@@ -156,3 +156,8 @@ WEBPUSH_SETTINGS = {
 SITE_ID = 1
 LOGIN_REDIRECT_URL = "menu"
 LOGOUT_REDIRECT_URL = "accounts:login"
+
+
+# TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+#     "cart.context_processors.cart_data",
+# ]
