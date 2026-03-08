@@ -11,6 +11,8 @@ from payments.models import Payment
 
 from .models import Cart, CartItem
 
+from .models import Cart, CartItem
+
 
 class AddToCartView(View):
     def post(self, request):

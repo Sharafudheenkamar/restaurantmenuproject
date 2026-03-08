@@ -1,6 +1,5 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
@@ -49,21 +48,10 @@ class ProfileView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        orders = (
+        context["orders"] = (
             Order.objects.filter(user=self.request.user)
             .select_related("table")
-            .prefetch_related("items__menu_item")
             .order_by("-created_at")
         )
-
-        order_rows = []
-        for order in orders:
-            try:
-                payment = order.payment
-            except ObjectDoesNotExist:
-                payment = None
-            order_rows.append({"order": order, "payment": payment})
-
-        context["order_rows"] = order_rows
         context["order_confirmed"] = self.request.GET.get("order") == "confirmed"
         return context
