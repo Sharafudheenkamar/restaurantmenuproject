@@ -1,21 +1,22 @@
-<h2>💳 Make Payment</h2>
+<h2>💳 Dummy Payment</h2>
 
-<p><b>Table:</b> {{ order.table.table_number }}</p>
+<p><b>Order ID:</b> #{{ order.id }}</p>
 <p><b>Total Amount:</b> ₹{{ amount }}</p>
+<p><b>Wallet:</b> Unlimited cash (test mode)</p>
 
 <form method="post">
   {% csrf_token %}
 
   <label>
-    <input type="radio" name="method" value="UPI" checked> UPI
+    <input type="radio" name="method" value="CASH" checked> Cash (Dummy)
   </label><br>
 
   <label>
-    <input type="radio" name="method" value="CARD"> Card
+    <input type="radio" name="method" value="UPI"> UPI (Dummy)
   </label><br>
 
   <label>
-    <input type="radio" name="method" value="WALLET"> Wallet
+    <input type="radio" name="method" value="CARD"> Card (Dummy)
   </label><br><br>
 
   <button type="submit">Pay Now</button>
