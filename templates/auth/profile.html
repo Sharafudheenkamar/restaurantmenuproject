@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="profile-card" style="width:980px;text-align:left;">
+<div class="profile-card" style="width:900px;text-align:left;">
     <h2>Customer Dashboard</h2>
 
     {% if order_confirmed %}
@@ -14,43 +14,27 @@
     <p><strong>Email:</strong> {{ request.user.email }}</p>
 
     <h3>Order History</h3>
-    {% if order_rows %}
+    {% if orders %}
       <table style="width:100%;border-collapse:collapse;">
         <thead>
           <tr style="background:#f1f1f1;">
             <th style="padding:8px;border:1px solid #ddd;">Order ID</th>
             <th style="padding:8px;border:1px solid #ddd;">Table</th>
-            <th style="padding:8px;border:1px solid #ddd;">Items</th>
-            <th style="padding:8px;border:1px solid #ddd;">Payment</th>
             <th style="padding:8px;border:1px solid #ddd;">Created</th>
             <th style="padding:8px;border:1px solid #ddd;">Status</th>
           </tr>
         </thead>
         <tbody>
-          {% for row in order_rows %}
+          {% for order in orders %}
             <tr>
-              <td style="padding:8px;border:1px solid #ddd;">#{{ row.order.id }}</td>
-              <td style="padding:8px;border:1px solid #ddd;">{{ row.order.table.number }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">#{{ order.id }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">{{ order.table.number }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">{{ order.created_at }}</td>
               <td style="padding:8px;border:1px solid #ddd;">
-                {% for item in row.order.items.all %}
-                  {{ item.menu_item.name }} x {{ item.quantity }}{% if not forloop.last %}, {% endif %}
-                {% empty %}
-                  -
-                {% endfor %}
-              </td>
-              <td style="padding:8px;border:1px solid #ddd;">
-                {% if row.payment %}
-                  {{ row.payment.payment_method }} / ₹{{ row.payment.amount }}
-                {% else %}
-                  Not Paid
-                {% endif %}
-              </td>
-              <td style="padding:8px;border:1px solid #ddd;">{{ row.order.created_at }}</td>
-              <td style="padding:8px;border:1px solid #ddd;">
-                {% if row.order.status == 'served' %}
+                {% if order.status == 'served' %}
                   <span style="color:#12692a;font-weight:700;">Served</span>
                 {% else %}
-                  <span style="color:#c8102e;font-weight:700;">Not Served ({{ row.order.status|title }})</span>
+                  <span style="color:#c8102e;font-weight:700;">Not Served ({{ order.status|title }})</span>
                 {% endif %}
               </td>
             </tr>
