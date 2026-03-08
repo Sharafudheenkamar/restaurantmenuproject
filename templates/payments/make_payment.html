@@ -1,22 +1,68 @@
-<h2>💳 Make Payment</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dummy Payment</title>
+<style>
+body{font-family:Poppins,Arial;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:#fff;margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.card{width:min(780px,96%);background:rgba(255,255,255,.1);backdrop-filter:blur(10px);padding:22px;border-radius:16px}
+h2{margin-top:0}.status{padding:6px 10px;border-radius:8px;font-weight:700;display:inline-block}.paid{background:#d6f7df;color:#115f28}.pending{background:#ffe0e0;color:#7a1212}
+table{width:100%;border-collapse:collapse;margin:12px 0;background:rgba(255,255,255,.08)}th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left}th{background:rgba(0,0,0,.25)}
+label{display:block;margin:8px 0}button{padding:11px 16px;border:none;border-radius:10px;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>💳 Dummy Payment</h2>
 
-<p><b>Table:</b> {{ order.table.table_number }}</p>
-<p><b>Total Amount:</b> ₹{{ amount }}</p>
+  <p><b>Order ID:</b> #{{ order.id }}</p>
+  <p><b>Table:</b> {{ order.table.number }}</p>
+  <p><b>Total Amount:</b> ₹{{ amount }}</p>
 
-<form method="post">
-  {% csrf_token %}
+  <p>
+    <b>Payment Status:</b>
+    {% if payment and payment.is_success %}
+      <span class="status paid">Paid</span>
+    {% else %}
+      <span class="status pending">Not Paid</span>
+    {% endif %}
+  </p>
 
-  <label>
-    <input type="radio" name="method" value="UPI" checked> UPI
-  </label><br>
+  <h3>Order Details</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in order_items %}
+        <tr>
+          <td>{{ item.menu_item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>₹{{ item.menu_item.price }}</td>
+          <td>₹{{ item.menu_item.price }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No items in this order.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-  <label>
-    <input type="radio" name="method" value="CARD"> Card
-  </label><br>
+  <p><b>Wallet:</b> Unlimited cash (test mode)</p>
 
-  <label>
-    <input type="radio" name="method" value="WALLET"> Wallet
-  </label><br><br>
-
-  <button type="submit">Pay Now</button>
-</form>
+  <form method="post">
+    {% csrf_token %}
+    <label><input type="radio" name="method" value="CASH" checked> Cash (Dummy)</label>
+    <label><input type="radio" name="method" value="UPI"> UPI (Dummy)</label>
+    <label><input type="radio" name="method" value="CARD"> Card (Dummy)</label>
+    <br>
+    <button type="submit">Pay Now</button>
+  </form>
+</div>
+</body>
+</html>
