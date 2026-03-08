@@ -4,340 +4,89 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Menu</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
 <style>
-
-body{
-    margin:0;
-    font-family:'Poppins',sans-serif;
-    background:linear-gradient(135deg,#000,#b71c1c,#ff1744);
-    color:white;
-    overflow-x:hidden;
-}
-
-/* floating food icons */
-.food{
-    position:fixed;
-    width:70px;
-    opacity:.9;
-    animation: float 14s linear infinite;
-    z-index:0;
-}
-.food:nth-child(1){ left:10%; animation-delay:0s;}
-.food:nth-child(2){ left:80%; animation-delay:4s;}
-.food:nth-child(3){ left:55%; animation-delay:8s;}
-.food:nth-child(4){ left:30%; animation-delay:11s;}
-
-@keyframes float{
-    0%{top:110%; transform:rotate(0deg)}
-    100%{top:-20%; transform:rotate(360deg)}
-}
-
-/* container */
-.menu-container{
-    max-width:1100px;
-    margin:auto;
-    padding:30px 20px;
-    position:relative;
-    z-index:1;
-}
-
-/* title */
-.menu-title{
-    text-align:center;
-    margin-bottom:25px;
-    font-size:34px;
-    font-weight:bold;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow{
-    from{text-shadow:0 0 10px #fff,0 0 20px #ff1744;}
-    to{text-shadow:0 0 25px #fff,0 0 50px #b71c1c;}
-}
-
-/* tabs */
-.tabs{
-    text-align:center;
-    margin-bottom:30px;
-}
-
-.tab{
-    display:inline-block;
-    padding:10px 18px;
-    margin:5px;
-    border-radius:25px;
-    background:rgba(255,255,255,0.15);
-    cursor:pointer;
-    transition:.3s;
-}
-
-.tab:hover{
-    background:#ff1744;
-}
-
-.tab.active{
-    background:#ff1744;
-}
-
-/* grid */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-    gap:25px;
-}
-
-/* card */
-.card{
-    background:rgba(255,255,255,0.08);
-    border-radius:20px;
-    padding:20px;
-    backdrop-filter: blur(16px);
-    box-shadow:0 15px 40px rgba(0,0,0,.6);
-    transition:.35s;
-}
-
-.card:hover{
-    transform:translateY(-8px) scale(1.02);
-}
-
-/* item */
-.item-name{
-    font-size:19px;
-    font-weight:bold;
-}
-
-.price{
-    color:#ff8a80;
-    margin:10px 0;
-    font-size:18px;
-}
-
-/* qty */
-.qty{
-    width:70px;
-    padding:8px;
-    border-radius:8px;
-    border:none;
-    background:rgba(255,255,255,0.2);
-    color:white;
-}
-
-/* button */
-.btn{
-    margin-top:12px;
-    width:100%;
-    background:linear-gradient(45deg,#ff1744,#b71c1c);
-    border:none;
-    padding:12px;
-    color:white;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.35s;
-}
-
-.btn:hover{
-    transform:scale(1.05);
-    box-shadow:0 0 25px rgba(255,0,0,.7);
-}
-
-/* floating cart */
-.cart-float{
-    position:fixed;
-    bottom:90px;
-    right:25px;
-    background:linear-gradient(45deg,#ff1744,#b71c1c);
-    width:70px;
-    height:70px;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:26px;
-    cursor:pointer;
-    box-shadow:0 5px 25px rgba(0,0,0,.7);
-    z-index:2;
-}
-
-/* badge */
-.badge{
-    position:absolute;
-    top:-5px;
-    right:-5px;
-    background:#fff;
-    color:#b71c1c;
-    font-size:13px;
-    padding:3px 8px;
-    border-radius:50%;
-    font-weight:bold;
-}
-
-/* total bar */
-.total-bar{
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
-    background:black;
-    padding:14px;
-    text-align:center;
-    font-size:18px;
-    font-weight:bold;
-    box-shadow:0 -3px 15px rgba(0,0,0,.7);
-}
-/* logout button */
-.logout-form{
-    position:fixed;
-    top:20px;
-    right:25px;
-    z-index:3;
-}
-
-.logout-btn{
-    border:none;
-    padding:10px 18px;
-    border-radius:10px;
-    background:linear-gradient(45deg,#ff1744,#b71c1c);
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-    transition:.3s;
-    box-shadow:0 0 15px rgba(0,0,0,.6);
-}
-
-.logout-btn:hover{
-    transform:scale(1.08);
-    box-shadow:0 0 25px rgba(255,0,0,.9);
-}
-
-
+body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:white;overflow-x:hidden}
+.food{position:fixed;width:70px;opacity:.9;animation:float 14s linear infinite;z-index:0}
+.food:nth-child(1){left:10%;animation-delay:0s}.food:nth-child(2){left:80%;animation-delay:4s}.food:nth-child(3){left:55%;animation-delay:8s}.food:nth-child(4){left:30%;animation-delay:11s}
+@keyframes float{0%{top:110%;transform:rotate(0deg)}100%{top:-20%;transform:rotate(360deg)}}
+.menu-container{max-width:1100px;margin:auto;padding:30px 20px;position:relative;z-index:1}
+.menu-title{text-align:center;margin-bottom:25px;font-size:34px;font-weight:bold;animation:glow 2s ease-in-out infinite alternate}
+@keyframes glow{from{text-shadow:0 0 10px #fff,0 0 20px #ff1744}to{text-shadow:0 0 25px #fff,0 0 50px #b71c1c}}
+.tabs{text-align:center;margin-bottom:30px}
+.tab{display:inline-block;padding:10px 18px;margin:5px;border-radius:25px;background:rgba(255,255,255,.15);cursor:pointer;transition:.3s;color:#fff;text-decoration:none}
+.tab:hover,.tab.active{background:#ff1744}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:25px}
+.card{background:rgba(255,255,255,.08);border-radius:20px;padding:20px;backdrop-filter:blur(16px);box-shadow:0 15px 40px rgba(0,0,0,.6);transition:.35s}
+.card:hover{transform:translateY(-8px) scale(1.02)}
+.item-name{font-size:19px;font-weight:bold}.item-category{color:#ffd9d9;font-size:13px;margin-top:4px}
+.price{color:#ff8a80;margin:10px 0;font-size:18px}.qty{width:70px;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,.2);color:#fff}
+.btn{margin-top:12px;width:100%;background:linear-gradient(45deg,#ff1744,#b71c1c);border:none;padding:12px;color:#fff;border-radius:10px;font-weight:600;cursor:pointer;transition:.35s}
+.btn:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(255,0,0,.7)}
+.cart-float{position:fixed;bottom:90px;right:25px;background:linear-gradient(45deg,#ff1744,#b71c1c);width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:26px;cursor:pointer;box-shadow:0 5px 25px rgba(0,0,0,.7);z-index:2}
+.badge{position:absolute;top:-5px;right:-5px;background:#fff;color:#b71c1c;font-size:13px;padding:3px 8px;border-radius:50%;font-weight:bold;min-width:18px;text-align:center}
+.total-bar{position:fixed;bottom:0;left:0;width:100%;background:#000;padding:14px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 -3px 15px rgba(0,0,0,.7)}
+.logout-form{position:fixed;top:20px;right:25px;z-index:3}.logout-btn{border:none;padding:10px 18px;border-radius:10px;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;font-weight:600;cursor:pointer;transition:.3s;box-shadow:0 0 15px rgba(0,0,0,.6)}
+.empty{grid-column:1 / -1;text-align:center;padding:30px;background:rgba(255,255,255,.08);border-radius:12px}
 </style>
 </head>
 <body>
-
-<!-- floating icons -->
 <img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" class="food">
 <img src="https://cdn-icons-png.flaticon.com/512/5787/5787016.png" class="food">
 <img src="https://cdn-icons-png.flaticon.com/512/135/135763.png" class="food">
 <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" class="food">
 
-<!-- Logout Button -->
 <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
-    {% csrf_token %}
-    <button type="submit" class="logout-btn">Logout</button>
-    </form>
+  {% csrf_token %}
+  <button type="submit" class="logout-btn">Logout</button>
+</form>
+
 <div class="menu-container">
+  <div class="menu-title">🍽 Today's Menu</div>
 
-<div class="menu-title">🍽 Today's Menu</div>
+  <div class="tabs">
+    <a class="tab {% if selected_category == 'all' %}active{% endif %}" href="?category=">All</a>
+    {% for c in categories %}
+      <a class="tab {% if selected_category == c.id|stringformat:'s' %}active{% endif %}" href="?category={{ c.id }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
 
-<!-- CATEGORY -->
-<div class="tabs">
-<div class="tab active" onclick="filterCat('all')">All</div>
-
-{% for c in categories %}
-<div class="tab" onclick="filterCat('{{ c.id }}')">
-{{ c.name }}
-</div>
-{% endfor %}
-</div>
-
-<!-- GRID -->
-<div class="grid">
-{% for item in items %}
-<div class="card item" data-cat="{{ item.category.id }}">
-
-<div class="item-name">{{ item.name }}</div>
-
-<div class="price">₹<span id="price{{item.id}}">{{ item.price }}</span></div>
-
-<input type="number"
-min="1"
-value="1"
-id="qty{{ item.id }}"
-class="qty"
-oninput="updateTotal()">
-
-<button class="btn" onclick="addToCart({{ item.id }})">
-Add to Cart
-</button>
-
-</div>
-{% endfor %}
+  <div class="grid">
+    {% for item in items %}
+      <div class="card item">
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-category">{{ item.category.name }}</div>
+        <div class="price">₹<span id="price{{ item.id }}">{{ item.price }}</span></div>
+        <input type="number" min="1" value="1" id="qty{{ item.id }}" class="qty">
+        <button class="btn" onclick="addToCart({{ item.id }})">Add to Cart</button>
+      </div>
+    {% empty %}
+      <div class="empty">No menu items in this category.</div>
+    {% endfor %}
+  </div>
 </div>
 
-</div>
-
-<!-- CART -->
-<div class="cart-float" onclick="location.href='/cart/'">
-🛒
-<div class="badge" id="cartCount">0</div>
-</div>
-
-<!-- TOTAL -->
-<div class="total-bar">
-Total: ₹ <span id="totalPrice">0</span>
-</div>
+<div class="cart-float" onclick="location.href='/cart/'">🛒<div class="badge" id="cartCount">{{ cart_count|default:0 }}</div></div>
+<div class="total-bar">Cart Total: ₹ <span id="totalPrice">0.00</span></div>
 
 <script>
+function getCSRFToken(){return document.cookie.split('; ').find(row=>row.startsWith('csrftoken='))?.split('=')[1];}
 
-let cartCount=0;
-let total=0;
-
-/* filter */
-function filterCat(id){
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-event.target.classList.add("active");
-
-document.querySelectorAll(".item").forEach(card=>{
-card.style.display=(id==="all"||card.dataset.cat===id)?"block":"none";
-});
-}
-
-/* total */
-function updateTotal(){
-total=0;
-
-document.querySelectorAll("[id^=qty]").forEach(input=>{
-let id=input.id.replace("qty","");
-let qty=parseInt(input.value)||0;
-let price=parseFloat(document.getElementById("price"+id).innerText);
-total+=qty*price;
-});
-
-document.getElementById("totalPrice").innerText=total.toFixed(2);
-}
-
-/* csrf */
-function getCSRFToken(){
-return document.cookie.split('; ')
-.find(row => row.startsWith('csrftoken'))
-?.split('=')[1];
-}
-
-/* add */
 function addToCart(id){
-let qty=document.getElementById("qty"+id).value;
-
-fetch("/cart/add/",{
-method:"POST",
-headers:{
-"X-CSRFToken":getCSRFToken(),
-"Content-Type":"application/x-www-form-urlencoded"
-},
-body:`item_id=${id}&qty=${qty}`
-})
-.then(res=>res.json())
-.then(data=>{
-cartCount=data.cart_count;
-document.getElementById("cartCount").innerText=cartCount;
-document.getElementById("totalPrice").innerText=data.total;
-})
+  const qty=document.getElementById("qty"+id).value;
+  fetch('/cart/add/',{
+    method:'POST',
+    headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/x-www-form-urlencoded'},
+    body:`item_id=${id}&qty=${qty}`
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.cart_count!==undefined){
+      document.getElementById('cartCount').innerText=data.cart_count;
+      document.getElementById('totalPrice').innerText=Number(data.total || 0).toFixed(2);
+    }
+  });
 }
-
 </script>
-
 </body>
 </html>
