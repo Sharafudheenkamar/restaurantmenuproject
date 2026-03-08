@@ -32,3 +32,9 @@ class MenuViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.item1.name)
         self.assertNotContains(response, self.item2.name)
+
+    def test_menu_has_order_history_button(self):
+        response = self.client.get(reverse("menu:menu-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Order History")
+        self.assertContains(response, reverse("accounts:profile"))
