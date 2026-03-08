@@ -166,7 +166,7 @@ body{
 
     <div class="field">
         <input type="text" name="username" required placeholder=" ">
-        <label>Username</label>
+        <label>Username or Email</label>
     </div>
 
     <div class="field">
@@ -178,6 +178,10 @@ body{
 
     <div class="link">
         No account? <a href="{%url 'accounts:signup' %}">Register</a>
+    </div>
+
+    <div class="link">
+        Forgot password? <a href="{% url 'accounts:password_reset' %}">Reset via Email</a>
     </div>
 
 </form>

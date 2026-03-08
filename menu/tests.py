@@ -38,3 +38,10 @@ class MenuViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Order History")
         self.assertContains(response, reverse("accounts:profile"))
+
+
+    def test_menu_has_email_button(self):
+        response = self.client.get(reverse("menu:menu-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email Us")
+        self.assertContains(response, "mailto:support@restaurant.com")
