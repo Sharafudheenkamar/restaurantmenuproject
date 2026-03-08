@@ -1,13 +1,19 @@
-from django.shortcuts import redirect
-from django.views.generic import CreateView, TemplateView
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from .forms import SignupForm,LoginForm
+from django.views.generic import CreateView, TemplateView
+
+from orders.models import Order
+
+from .forms import LoginForm, SignupForm
+
 
 class SignupView(CreateView):
     form_class = SignupForm
     template_name = 'auth/signup.html'
     success_url = reverse_lazy('login')
+
 
 class CustomLoginView(LoginView):
     template_name = 'auth/login.html'
@@ -18,14 +24,11 @@ class CustomLoginView(LoginView):
             if next_url:
                 return redirect(next_url)
         return super().dispatch(request, *args, **kwargs)
-    
+
     def get_success_url(self):
         user = self.request.user
-        print(user.role)
-                # get next from POST first (important), then GET
         next_url = self.request.POST.get("next") or self.request.GET.get("next")
 
-        # ✅ CUSTOMER → go to menu WITH table id
         if user.role == "customer":
             if next_url:
                 return next_url
@@ -34,17 +37,21 @@ class CustomLoginView(LoginView):
         if user.role == "admin":
             return reverse_lazy("administrator:admin-dashboard")
 
-        elif user.role == "kitchen":
+        if user.role == "kitchen":
             return reverse_lazy("kitchen-orders")
-        
-        elif user.role == "customer":
-            return reverse_lazy("menu:menu-list")
 
-        
-    
+        return reverse_lazy("login")
 
-        else:
-            return reverse_lazy("login")
 
-class ProfileView(TemplateView):
-    template_name = 'user/profile.html'
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'auth/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["orders"] = (
+            Order.objects.filter(user=self.request.user)
+            .select_related("table")
+            .order_by("-created_at")
+        )
+        context["order_confirmed"] = self.request.GET.get("order") == "confirmed"
+        return context

@@ -2,7 +2,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from menu.models import Category, MenuItem
+from menu.models import Category, MenuItem, Table
+from orders.models import Order
+from payments.models import Payment
 
 from .models import Cart
 
@@ -21,6 +23,7 @@ class CartFlowTests(TestCase):
             price="100.00",
             is_available=True,
         )
+        self.table = Table.objects.create(number=1, capacity=4)
 
     def test_add_to_cart_uses_quantity_for_new_item(self):
         response = self.client.post(reverse("cart-add"), {"item_id": self.item.id, "qty": 2})
@@ -43,3 +46,20 @@ class CartFlowTests(TestCase):
         payload = response.json()
         self.assertTrue(payload["success"])
         self.assertEqual(payload["count"], 0)
+
+    def test_dummy_checkout_creates_order_and_payment(self):
+        session = self.client.session
+        session["table"] = self.table.id
+        session.save()
+
+        self.client.post(reverse("cart-add"), {"item_id": self.item.id, "qty": 2})
+        response = self.client.post(reverse("cart-checkout"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:profile"), response.url)
+
+        order = Order.objects.get(user=self.user)
+        self.assertEqual(order.status, "pending")
+        self.assertEqual(order.items.first().quantity, 2)
+        self.assertTrue(Payment.objects.filter(order=order, is_success=True).exists())
+        self.assertFalse(Cart.objects.filter(user=self.user).exists())

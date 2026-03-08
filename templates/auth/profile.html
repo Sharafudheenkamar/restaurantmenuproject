@@ -1,13 +1,54 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="profile-card">
-    <h2>Profile</h2>
+<div class="profile-card" style="width:900px;text-align:left;">
+    <h2>Customer Dashboard</h2>
+
+    {% if order_confirmed %}
+      <p style="background:#d6f4df;color:#12692a;padding:10px;border-radius:6px;">
+        ✅ Order confirmed successfully with dummy payment.
+      </p>
+    {% endif %}
 
     <p><strong>Username:</strong> {{ request.user.username }}</p>
     <p><strong>Email:</strong> {{ request.user.email }}</p>
 
-    <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
+    <h3>Order History</h3>
+    {% if orders %}
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f1f1f1;">
+            <th style="padding:8px;border:1px solid #ddd;">Order ID</th>
+            <th style="padding:8px;border:1px solid #ddd;">Table</th>
+            <th style="padding:8px;border:1px solid #ddd;">Created</th>
+            <th style="padding:8px;border:1px solid #ddd;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;">#{{ order.id }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">{{ order.table.number }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">{{ order.created_at }}</td>
+              <td style="padding:8px;border:1px solid #ddd;">
+                {% if order.status == 'served' %}
+                  <span style="color:#12692a;font-weight:700;">Served</span>
+                {% else %}
+                  <span style="color:#c8102e;font-weight:700;">Not Served ({{ order.status|title }})</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No orders yet.</p>
+    {% endif %}
+
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <a href="{% url 'menu:menu-list' %}" class="logout-btn" style="background:#0d6efd;">Go to Menu</a>
+      <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
+    </div>
 </div>
 
 {% endblock %}

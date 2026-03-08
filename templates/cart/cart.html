@@ -14,7 +14,10 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
 .btn{border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;transition:.2s}
 .btn-danger{background:#333;color:#fff}.btn-danger:hover{background:#000}
 .btn-main{background:#c8102e;color:#fff}.btn-main:hover{background:#a50d24}
-.total-box{margin-top:20px;font-size:20px;font-weight:bold;color:#c8102e}.empty-box{background:#fff;padding:40px;border-radius:12px;text-align:center;font-size:18px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+.btn-success{background:#1b8f3a;color:#fff}.btn-success:hover{background:#12692a}
+.total-box{margin-top:20px;font-size:20px;font-weight:bold;color:#c8102e}
+.empty-box{background:#fff;padding:40px;border-radius:12px;text-align:center;font-size:18px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px}.alert-success{background:#d6f4df;color:#12692a}.actions{display:flex;gap:10px;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -23,6 +26,14 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
   <h2 class="cart-title">Your Cart</h2>
   <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
 </div>
+
+<div class="cart-head">
+  <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
+</div>
+
+{% if checkout_error %}
+  <div class="alert">Unable to checkout right now. Please scan a table QR and try again.</div>
+{% endif %}
 
 {% if items %}
 <table class="cart-table">
@@ -42,7 +53,13 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
 
 <div class="total-box">Total: ₹ <span id="cart-total">{{ cart.total }}</span></div>
 <br>
-<button class="btn btn-main" onclick="clearCart()">🗑 Clear Cart</button>
+<div class="actions">
+  <button class="btn btn-main" onclick="clearCart()">🗑 Clear Cart</button>
+  <form method="post" action="{% url 'cart-checkout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">💳 Dummy Payment & Confirm Order</button>
+  </form>
+</div>
 {% else %}
 <div class="empty-box">🛒 Your cart is empty</div>
 {% endif %}
