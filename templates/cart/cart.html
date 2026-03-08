@@ -22,7 +22,18 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
 </head>
 <body>
 
-<h2 class="cart-title">Your Cart</h2>
+<div class="cart-head">
+  <h2 class="cart-title">Your Cart</h2>
+  <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
+</div>
+
+<div class="cart-head">
+  <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
+</div>
+
+{% if checkout_error %}
+  <div class="alert">Unable to checkout right now. Please scan a table QR and try again.</div>
+{% endif %}
 
 <div class="cart-head">
   <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
