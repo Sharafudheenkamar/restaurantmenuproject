@@ -61,6 +61,15 @@ class AuthenticationFlowTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+
+    def test_login_shows_error_message_for_invalid_credentials(self):
+        response = self.client.post(
+            reverse("accounts:login"),
+            {"username": "customer2@example.com", "password": "wrong-pass"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Please enter a correct username and password")
+
     def test_password_reset_sends_temporary_password_email(self):
         old_password = "pass12345"
         response = self.client.post(

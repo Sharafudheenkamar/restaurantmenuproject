@@ -19,7 +19,6 @@ class SignupView(CreateView):
     success_url = reverse_lazy("login")
 
 
-
 class CustomLoginView(LoginView):
     template_name = "auth/login.html"
     form_class = EmailOrUsernameAuthenticationForm
