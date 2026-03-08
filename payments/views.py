@@ -31,6 +31,8 @@ class MakePaymentView(LoginRequiredMixin, TemplateView):
 
         context['order'] = order
         context['amount'] = total_amount
+        context['order_items'] = order.items.select_related('menu_item').all()
+        context['payment'] = Payment.objects.filter(order=order).first()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -48,13 +50,19 @@ class MakePaymentView(LoginRequiredMixin, TemplateView):
             )['total'] or 0
         )
 
-        # 💳 Save Payment (Success simulation)
-        Payment.objects.create(
+        payment, created = Payment.objects.get_or_create(
             order=order,
-            amount=total_amount,
-            payment_method=request.POST.get('method', 'UPI'),
-            is_success=True
+            defaults={
+                'amount': total_amount,
+                'payment_method': request.POST.get('method', 'UPI'),
+                'is_success': True,
+            },
         )
+        if not created:
+            payment.amount = total_amount
+            payment.payment_method = request.POST.get('method', payment.payment_method or 'UPI')
+            payment.is_success = True
+            payment.save(update_fields=['amount', 'payment_method', 'is_success'])
 
         # 🔄 Update order status
         order.status = 'pending'   # kitchen will start preparing
