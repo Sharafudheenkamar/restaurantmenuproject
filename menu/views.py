@@ -1,5 +1,5 @@
 from django.views.generic import ListView
-from .models import MenuItem
+from .models import Category, MenuItem
 
 class TodayMenuView(ListView):
     model = MenuItem
@@ -12,4 +12,16 @@ class TodayMenuView(ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return MenuItem.objects.filter(is_available=True)
+        queryset = MenuItem.objects.filter(is_available=True).select_related("category")
+        category_id = self.request.GET.get("category")
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.objects.all().order_by("name")
+        context["selected_category"] = self.request.GET.get("category", "all")
+        return context
