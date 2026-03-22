@@ -40,7 +40,7 @@ class AdminDashboardNavigationTests(TestCase):
         table2 = Table.objects.create(owner=self.admin, number=2, capacity=4)
         self.other_table = Table.objects.create(owner=self.other_admin, number=1, capacity=6)
         category = Category.objects.create(name="Main")
-        item = MenuItem.objects.create(category=category, name="Burger", price="100.00", is_available=True)
+        item = MenuItem.objects.create(owner=self.admin, category=category, name="Burger", price="100.00", is_available=True)
 
         order1 = Order.objects.create(user=self.customer1, table=table1, status="pending")
         order2 = Order.objects.create(user=self.customer2, table=table2, status="served")
@@ -163,7 +163,7 @@ class AdminDashboardNavigationTests(TestCase):
         self.assertTrue(bool(qr_obj.qr_image))
         generated_url = mock_make.call_args[0][0]
         self.assertIn("http://example.com:9000/login/", generated_url)
-        self.assertIn("next=%2Fmenu%2F%3Ftable%3D9", generated_url)
+        self.assertIn("next=%2Fmenu%2Ftable%2F" + str(table.id) + "%2F", generated_url)
 
 
 class AdminTableOwnershipTests(TestCase):
@@ -214,3 +214,11 @@ class AdminTableOwnershipTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
         self.assertFalse(TableQR.objects.filter(table=self.other_table).exists())
+
+    def test_menu_edit_cannot_access_other_admin_item(self):
+        category = Category.objects.create(name="Shared")
+        other_item = MenuItem.objects.create(owner=self.other_admin, category=category, name="Secret Dish", price="42.00", is_available=True)
+
+        response = self.client.get(reverse("administrator:admin-menu-edit", args=[other_item.id]))
+
+        self.assertEqual(response.status_code, 404)

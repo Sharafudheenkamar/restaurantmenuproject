@@ -74,6 +74,9 @@ class MenuManageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     template_name = "administrator/menu_list.html"
     allowed_roles = ["admin"]
 
+    def get_queryset(self):
+        return MenuItem.objects.filter(owner=self.request.user).select_related("category")
+
 #Add Item
 
 from django.views import View
@@ -90,6 +93,7 @@ class MenuCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def post(self, request):
         MenuItem.objects.create(
+            owner=request.user,
             name=request.POST["name"],
             price=request.POST["price"],
             category_id=request.POST["category"],
@@ -101,13 +105,13 @@ class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        item = MenuItem.objects.get(id=pk)
+        item = get_object_or_404(MenuItem, id=pk, owner=request.user)
         return render(request,"administrator/menu_edit.html",
             {"item": item, "categories": Category.objects.all()}
         )
 
     def post(self, request, pk):
-        item = MenuItem.objects.get(id=pk)
+        item = get_object_or_404(MenuItem, id=pk, owner=request.user)
         item.name = request.POST["name"]
         item.price = request.POST["price"]
         item.category_id = request.POST["category"]
@@ -120,7 +124,7 @@ class MenuDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        MenuItem.objects.get(id=pk).delete()
+        get_object_or_404(MenuItem, id=pk, owner=request.user).delete()
         return redirect("administrator:admin-menu")
 #Qr generator view
 import qrcode
@@ -354,7 +358,7 @@ class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
 
         if not qr_obj.qr_image:
             login_url = request.build_absolute_uri(reverse("accounts:login"))
-            next_url = f"{reverse('menu:menu-list')}?table={table.number}"
+            next_url = reverse('menu:table-menu', args=[table.id])
             url = f"{login_url}?{urlencode({'next': next_url})}"
 
             
