@@ -1,3 +1,4 @@
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +72,7 @@ body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg
                     Not Paid
                   {% endif %}
                 </td>
-                <td>{{ row.order.created_at }}</td>
+                <td>{{ row.order.created_at|localtime|date:'d M Y, h:i A' }} IST</td>
                 <td>
                   {% if row.order.status == 'served' %}
                     <span class="status-served">Served</span>

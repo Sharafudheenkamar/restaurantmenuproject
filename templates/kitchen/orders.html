@@ -1,3 +1,4 @@
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,6 +71,7 @@ ul{margin:8px 0 12px;padding-left:18px}
         <div class="card">
           <h4>Order #{{ order.id }} - Table {{ order.table.number }}</h4>
           <div class="muted">Customer: {{ order.user.username }}</div>
+          <div class="muted">Ordered: {{ order.created_at|localtime|date:'d M Y, h:i A' }} IST</div>
           <p>Status: <span class="status not">{{ order.status|title }}</span></p>
           <ul>
             {% for item in order.items.all %}
@@ -93,6 +95,7 @@ ul{margin:8px 0 12px;padding-left:18px}
         <div class="card">
           <h4>Order #{{ order.id }} - Table {{ order.table.number }}</h4>
           <div class="muted">Customer: {{ order.user.username }}</div>
+          <div class="muted">Ordered: {{ order.created_at|localtime|date:'d M Y, h:i A' }} IST</div>
           <p>Status: <span class="status served">Served</span></p>
           <ul>
             {% for item in order.items.all %}
