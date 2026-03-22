@@ -75,3 +75,64 @@ class AdminDashboardNavigationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Admin Analytics")
         self.assertContains(response, "Total Orders")
+
+    def test_add_staff_page_only_allows_kitchen_role_ui(self):
+        response = self.client.get(reverse("administrator:add-staff"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="Kitchen"')
+        self.assertNotContains(response, 'name="role"')
+
+    def test_add_staff_rejects_duplicate_username(self):
+        response = self.client.post(
+            reverse("administrator:add-staff"),
+            {
+                "username": "alice",
+                "email": "newkitchen@example.com",
+                "password": "pass12345",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Username already exists")
+
+    def test_add_staff_rejects_duplicate_email(self):
+        response = self.client.post(
+            reverse("administrator:add-staff"),
+            {
+                "username": "newkitchen",
+                "email": "alice@example.com",
+                "password": "pass12345",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email already exists")
+
+    def test_add_staff_creates_kitchen_user(self):
+        response = self.client.post(
+            reverse("administrator:add-staff"),
+            {
+                "username": "kitchen_new",
+                "email": "kitchen_new@example.com",
+                "password": "pass12345",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        created_user = get_user_model().objects.get(username="kitchen_new")
+        self.assertEqual(created_user.role, "kitchen")
+
+    def test_edit_staff_page_has_password_field(self):
+        response = self.client.get(reverse("administrator:edit-staff", args=[self.customer1.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="password"')
+        self.assertNotContains(response, 'name="role"')
+
+    def test_edit_staff_can_update_password(self):
+        response = self.client.post(
+            reverse("administrator:edit-staff", args=[self.customer1.id]),
+            {
+                "password": "newpass123",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.customer1.refresh_from_db()
+        self.assertTrue(self.customer1.check_password("newpass123"))
+        self.assertEqual(self.customer1.role, "customer")

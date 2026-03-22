@@ -20,7 +20,6 @@ body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg
 .status-served{color:#79ff9c;font-weight:700}.status-pending{color:#ffd2d2;font-weight:700}
 .actions{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
 .btn{display:inline-block;padding:10px 16px;border-radius:10px;text-decoration:none;color:#fff;font-weight:600;background:linear-gradient(45deg,#ff1744,#b71c1c)}
-.btn.blue{background:linear-gradient(45deg,#3b82f6,#1d4ed8)}
 .empty{padding:16px;background:rgba(255,255,255,.08);border-radius:10px}
 </style>
 </head>
@@ -89,8 +88,8 @@ body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg
     {% endif %}
 
     <div class="actions">
-      <a href="{% url 'menu:menu-list' %}" class="btn blue">Go to Menu</a>
-      <a href="{% url 'accounts:password_change' %}" class="btn" style="background:linear-gradient(45deg,#7c3aed,#6d28d9)">Change Password</a>
+      <a href="{% url 'menu:menu-list' %}" class="btn">Go to Menu</a>
+      <a href="{% url 'accounts:password_change' %}" class="btn">Change Password</a>
       <a href="{% url 'accounts:logout' %}" class="btn">Logout</a>
     </div>
   </div>

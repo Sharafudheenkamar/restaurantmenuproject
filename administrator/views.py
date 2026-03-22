@@ -266,14 +266,33 @@ class StaffCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request):
-        return render(request, "administrator/add_staff.html")
+        return render(request, "administrator/add_staff.html", {"form_data": {}})
 
     def post(self, request):
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+
+        context = {
+            "form_data": {
+                "username": username,
+                "email": email,
+            }
+        }
+
+        if User.objects.filter(username__iexact=username).exists():
+            context["error_message"] = "Username already exists. Please choose a different username."
+            return render(request, "administrator/add_staff.html", context)
+
+        if User.objects.filter(email__iexact=email).exists():
+            context["error_message"] = "Email already exists. Please use a different email address."
+            return render(request, "administrator/add_staff.html", context)
+
         User.objects.create(
-            username=request.POST["username"],
-            password=make_password(request.POST["password"]),
-            role=request.POST["role"],
-            email=request.POST["email"]
+            username=username,
+            password=make_password(password),
+            role="kitchen",
+            email=email
         )
         return redirect("administrator:admin-staff")
 class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
@@ -285,7 +304,9 @@ class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        user.role = request.POST["role"]
+        new_password = request.POST.get("password", "").strip()
+        if new_password:
+            user.password = make_password(new_password)
         user.save()
         return redirect("administrator:admin-staff")
 class StaffDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
