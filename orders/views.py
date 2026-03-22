@@ -46,12 +46,19 @@ class KitchenOrderListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     context_object_name = "orders"
     ordering = ["-created_at"]
 
-    def get_queryset(self):
+    def get_base_queryset(self):
         queryset = (
-            Order.objects.select_related("user", "table")
+            Order.objects.select_related("user", "table", "table__owner")
             .prefetch_related("items__menu_item")
-            .all()
         )
+        if self.request.user.managed_by_id:
+            queryset = queryset.filter(table__owner=self.request.user.managed_by)
+        else:
+            queryset = queryset.none()
+        return queryset
+
+    def get_queryset(self):
+        queryset = self.get_base_queryset()
 
         customer_id = self.request.GET.get("customer")
         table_id = self.request.GET.get("table")
@@ -71,8 +78,9 @@ class KitchenOrderListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         context["served_orders"] = [o for o in orders if o.status == "served"]
 
         User = get_user_model()
-        context["customers"] = User.objects.filter(role="customer").order_by("username")
-        context["tables"] = Table.objects.all().order_by("number")
+        base_queryset = self.get_base_queryset()
+        context["customers"] = User.objects.filter(id__in=base_queryset.values_list("user_id", flat=True)).order_by("username")
+        context["tables"] = Table.objects.filter(owner=self.request.user.managed_by).order_by("number") if self.request.user.managed_by_id else Table.objects.none()
         context["selected_customer"] = self.request.GET.get("customer", "")
         context["selected_table"] = self.request.GET.get("table", "")
         return context
@@ -84,6 +92,12 @@ class UpdateOrderStatusView(LoginRequiredMixin, RoleRequiredMixin, UpdateView):
     fields = ["status"]
     template_name = "kitchen/update_order.html"
     success_url = reverse_lazy("kitchen-orders")
+
+    def get_queryset(self):
+        queryset = Order.objects.select_related("table", "table__owner")
+        if self.request.user.managed_by_id:
+            return queryset.filter(table__owner=self.request.user.managed_by)
+        return queryset.none()
 
     def form_valid(self, form):
         response = super().form_valid(form)

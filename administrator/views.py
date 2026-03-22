@@ -59,32 +59,29 @@ class AdminAnalyticsView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Time range (last 7 days)
         last_7_days = now() - timedelta(days=7)
+        owned_orders = Order.objects.filter(table__owner=self.request.user)
+        owned_payments = Payment.objects.filter(order__table__owner=self.request.user)
+        owned_feedback = Feedback.objects.filter(order__table__owner=self.request.user)
 
-        # Orders
-        context["total_orders"] = Order.objects.count()
-        context["pending_orders"] = Order.objects.filter(status="pending").count()
-        context["preparing_orders"] = Order.objects.filter(status="preparing").count()
-        context["completed_orders"] = Order.objects.filter(status="served").count()
+        context["total_orders"] = owned_orders.count()
+        context["pending_orders"] = owned_orders.filter(status="pending").count()
+        context["preparing_orders"] = owned_orders.filter(status="preparing").count()
+        context["completed_orders"] = owned_orders.filter(status="served").count()
 
-        # Revenue
         context["total_revenue"] = (
-            Payment.objects.filter(is_success=True)
+            owned_payments.filter(is_success=True)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
         context["weekly_revenue"] = (
-            Payment.objects.filter(is_success=True, paid_at__gte=last_7_days)
+            owned_payments.filter(is_success=True, paid_at__gte=last_7_days)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
-        # Feedback
-        context["total_feedbacks"] = Feedback.objects.count()
-
-        # Orders per day (for charts)
+        context["total_feedbacks"] = owned_feedback.count()
         context["orders_by_day"] = (
-            Order.objects.filter(created_at__gte=last_7_days)
+            owned_orders.filter(created_at__gte=last_7_days)
             .values("created_at__date")
             .annotate(count=Count("id"))
             .order_by("created_at__date")
@@ -193,6 +190,7 @@ class OrdersDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         queryset = (
             Order.objects.select_related("user", "table")
             .prefetch_related("items__menu_item")
+            .filter(table__owner=self.request.user)
             .order_by("-created_at")
         )
 
@@ -210,7 +208,7 @@ class OrdersDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["table_filter"] = self.request.GET.get("table", "").strip()
         context["customer_filter"] = self.request.GET.get("customer", "").strip()
-        context["tables"] = Table.objects.order_by("number")
+        context["tables"] = Table.objects.filter(owner=self.request.user).order_by("number")
         return context
 #Payments dashboard
 
@@ -222,7 +220,7 @@ class PaymentsDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     allowed_roles = ["admin"]
 
     def get_queryset(self):
-        queryset = Payment.objects.select_related("order__user", "order__table").order_by("-paid_at")
+        queryset = Payment.objects.select_related("order__user", "order__table").filter(order__table__owner=self.request.user).order_by("-paid_at")
 
         table_filter = self.request.GET.get("table", "").strip()
         customer_filter = self.request.GET.get("customer", "").strip()
@@ -238,7 +236,7 @@ class PaymentsDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["table_filter"] = self.request.GET.get("table", "").strip()
         context["customer_filter"] = self.request.GET.get("customer", "").strip()
-        context["tables"] = Table.objects.order_by("number")
+        context["tables"] = Table.objects.filter(owner=self.request.user).order_by("number")
         return context
 from accounts.models import User
 #Staff Management
@@ -265,7 +263,7 @@ class StaffListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = User
 
     def get_queryset(self):
-        return User.objects.exclude(role__in=["customer", "admin"])
+        return User.objects.filter(role="kitchen", managed_by=self.request.user)
 
 class StaffCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
@@ -297,18 +295,19 @@ class StaffCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
             username=username,
             password=make_password(password),
             role="kitchen",
-            email=email
+            email=email,
+            managed_by=request.user,
         )
         return redirect("administrator:admin-staff")
 class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+        user = get_object_or_404(User, pk=pk, role="kitchen", managed_by=request.user)
         return render(request, "administrator/edit_staff.html", {"staff": user})
 
     def post(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+        user = get_object_or_404(User, pk=pk, role="kitchen", managed_by=request.user)
         new_password = request.POST.get("password", "").strip()
         if new_password:
             user.password = make_password(new_password)
@@ -318,7 +317,7 @@ class StaffDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+        user = get_object_or_404(User, pk=pk, role="kitchen", managed_by=request.user)
         user.delete()
         return redirect("administrator:admin-staff")
 

@@ -35,10 +35,24 @@ class AdminDashboardNavigationTests(TestCase):
             role="customer",
             email="bob@example.com",
         )
+        self.kitchen_staff = user_model.objects.create_user(
+            username="kitchen_admin1",
+            password="pass12345",
+            role="kitchen",
+            email="kitchen_admin1@example.com",
+            managed_by=self.admin,
+        )
+        self.other_kitchen_staff = user_model.objects.create_user(
+            username="kitchen_admin2",
+            password="pass12345",
+            role="kitchen",
+            email="kitchen_admin2@example.com",
+            managed_by=self.other_admin,
+        )
 
         table1 = Table.objects.create(owner=self.admin, number=1, capacity=4)
         table2 = Table.objects.create(owner=self.admin, number=2, capacity=4)
-        self.other_table = Table.objects.create(owner=self.other_admin, number=1, capacity=6)
+        self.other_table = Table.objects.create(owner=self.other_admin, number=9, capacity=6)
         category = Category.objects.create(name="Main")
         item = MenuItem.objects.create(owner=self.admin, category=category, name="Burger", price="100.00", is_available=True)
 
@@ -48,6 +62,9 @@ class AdminDashboardNavigationTests(TestCase):
         OrderItem.objects.create(order=order2, menu_item=item, quantity=2)
 
         Payment.objects.create(order=order2, amount="200.00", payment_method="CASH", is_success=True)
+        other_order = Order.objects.create(user=self.customer2, table=self.other_table, status="preparing")
+        OrderItem.objects.create(order=other_order, menu_item=item, quantity=3)
+        Payment.objects.create(order=other_order, amount="300.00", payment_method="UPI", is_success=True)
 
         self.client.login(username="admin1", password="pass12345")
 
@@ -66,7 +83,16 @@ class AdminDashboardNavigationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Burger x 1")
         self.assertContains(response, "Table 1")
+        self.assertNotContains(response, "Table 9")
         self.assertNotContains(response, "bob")
+
+    def test_orders_page_only_shows_owned_tables_without_filters(self):
+        response = self.client.get(reverse("administrator:admin-orders"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Table 1")
+        self.assertContains(response, "Table 2")
+        self.assertNotContains(response, "Table 9")
 
     def test_payments_page_shows_details_and_filter(self):
         response = self.client.get(
@@ -76,13 +102,25 @@ class AdminDashboardNavigationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Paid")
         self.assertContains(response, "Table 2")
+        self.assertNotContains(response, "Table 9")
         self.assertNotContains(response, "alice")
+
+    def test_payments_page_only_shows_owned_tables_without_filters(self):
+        response = self.client.get(reverse("administrator:admin-payments"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Table 2")
+        self.assertNotContains(response, "Table 9")
+        self.assertNotContains(response, "300.00")
 
     def test_analytics_page_loads(self):
         response = self.client.get(reverse("administrator:admin-analytics"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Admin Analytics")
         self.assertContains(response, "Total Orders")
+        self.assertEqual(response.context["total_orders"], 2)
+        self.assertEqual(response.context["preparing_orders"], 0)
+        self.assertEqual(response.context["total_revenue"], 200)
 
     def test_add_staff_page_only_allows_kitchen_role_ui(self):
         response = self.client.get(reverse("administrator:add-staff"))
@@ -126,24 +164,37 @@ class AdminDashboardNavigationTests(TestCase):
         self.assertEqual(response.status_code, 302)
         created_user = get_user_model().objects.get(username="kitchen_new")
         self.assertEqual(created_user.role, "kitchen")
+        self.assertEqual(created_user.managed_by, self.admin)
+
+    def test_staff_list_only_shows_logged_in_admin_staff(self):
+        response = self.client.get(reverse("administrator:admin-staff"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.kitchen_staff.username)
+        self.assertNotContains(response, self.other_kitchen_staff.username)
 
     def test_edit_staff_page_has_password_field(self):
-        response = self.client.get(reverse("administrator:edit-staff", args=[self.customer1.id]))
+        response = self.client.get(reverse("administrator:edit-staff", args=[self.kitchen_staff.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="password"')
         self.assertNotContains(response, 'name="role"')
 
     def test_edit_staff_can_update_password(self):
         response = self.client.post(
-            reverse("administrator:edit-staff", args=[self.customer1.id]),
+            reverse("administrator:edit-staff", args=[self.kitchen_staff.id]),
             {
                 "password": "newpass123",
             },
         )
         self.assertEqual(response.status_code, 302)
-        self.customer1.refresh_from_db()
-        self.assertTrue(self.customer1.check_password("newpass123"))
-        self.assertEqual(self.customer1.role, "customer")
+        self.kitchen_staff.refresh_from_db()
+        self.assertTrue(self.kitchen_staff.check_password("newpass123"))
+        self.assertEqual(self.kitchen_staff.role, "kitchen")
+
+    def test_cannot_edit_other_admin_staff(self):
+        response = self.client.get(reverse("administrator:edit-staff", args=[self.other_kitchen_staff.id]))
+
+        self.assertEqual(response.status_code, 404)
 
     def test_generate_qr_uses_current_request_host(self):
         table = Table.objects.create(owner=self.admin, number=9, capacity=4)
