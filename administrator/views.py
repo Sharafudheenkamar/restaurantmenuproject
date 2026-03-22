@@ -304,11 +304,30 @@ class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk, role="kitchen", managed_by=request.user)
-        return render(request, "administrator/edit_staff.html", {"staff": user})
+        return render(
+            request,
+            "administrator/edit_staff.html",
+            {"staff": user, "form_data": {"email": user.email}},
+        )
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk, role="kitchen", managed_by=request.user)
+        new_email = request.POST.get("email", "").strip()
         new_password = request.POST.get("password", "").strip()
+
+        if new_email and User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+            return render(
+                request,
+                "administrator/edit_staff.html",
+                {
+                    "staff": user,
+                    "form_data": {"email": new_email},
+                    "error_message": "Email already exists. Please use a different email address.",
+                },
+            )
+
+        if new_email:
+            user.email = new_email
         if new_password:
             user.password = make_password(new_password)
         user.save()

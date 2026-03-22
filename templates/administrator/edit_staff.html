@@ -71,6 +71,14 @@ form{
     gap:18px;
 }
 
+.error-box{
+    padding:12px;
+    border-radius:10px;
+    background:rgba(255,23,68,.2);
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff;
+}
+
 label{
     color:#ffb3b3;
 }
@@ -148,6 +156,13 @@ Username: <b>{{ staff.username }}</b>
 <div class="username-box">
 Role: <b>{{ staff.get_role_display }}</b>
 </div>
+
+{% if error_message %}
+<div class="error-box">{{ error_message }}</div>
+{% endif %}
+
+<label>Email</label>
+<input type="email" name="email" value="{{ form_data.email|default:staff.email }}" placeholder="Staff email">
 
 <label>New Password</label>
 <input type="password" name="password" placeholder="Leave blank to keep current password">

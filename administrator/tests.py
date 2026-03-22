@@ -177,12 +177,14 @@ class AdminDashboardNavigationTests(TestCase):
         response = self.client.get(reverse("administrator:edit-staff", args=[self.kitchen_staff.id]))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'name="password"')
+        self.assertContains(response, 'name="email"')
         self.assertNotContains(response, 'name="role"')
 
     def test_edit_staff_can_update_password(self):
         response = self.client.post(
             reverse("administrator:edit-staff", args=[self.kitchen_staff.id]),
             {
+                "email": self.kitchen_staff.email,
                 "password": "newpass123",
             },
         )
@@ -190,6 +192,29 @@ class AdminDashboardNavigationTests(TestCase):
         self.kitchen_staff.refresh_from_db()
         self.assertTrue(self.kitchen_staff.check_password("newpass123"))
         self.assertEqual(self.kitchen_staff.role, "kitchen")
+
+    def test_edit_staff_can_update_email(self):
+        response = self.client.post(
+            reverse("administrator:edit-staff", args=[self.kitchen_staff.id]),
+            {
+                "email": "updated_kitchen@example.com",
+                "password": "",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.kitchen_staff.refresh_from_db()
+        self.assertEqual(self.kitchen_staff.email, "updated_kitchen@example.com")
+
+    def test_edit_staff_rejects_duplicate_email(self):
+        response = self.client.post(
+            reverse("administrator:edit-staff", args=[self.kitchen_staff.id]),
+            {
+                "email": "alice@example.com",
+                "password": "",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email already exists")
 
     def test_cannot_edit_other_admin_staff(self):
         response = self.client.get(reverse("administrator:edit-staff", args=[self.other_kitchen_staff.id]))

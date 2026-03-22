@@ -57,6 +57,13 @@ class MenuViewTests(TestCase):
         self.assertContains(response, "Email Us")
         self.assertContains(response, "mailto:support@restaurant.com")
 
+    def test_menu_has_mobile_responsive_styles(self):
+        response = self.client.get(reverse("menu:menu-list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "@media (max-width: 768px)")
+        self.assertContains(response, "position:sticky")
+        self.assertContains(response, "grid-template-columns:1fr")
+
     def test_menu_shows_current_cart_badge_and_total(self):
         self.client.login(username="menuuser", password="pass12345")
         cart = Cart.objects.create(user=self.user)
