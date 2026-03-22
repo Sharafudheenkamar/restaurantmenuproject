@@ -1,4 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django.urls import reverse
 
 
 
@@ -35,18 +37,18 @@ class AdminAnalyticsView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
 
         # Orders
         context["total_orders"] = Order.objects.count()
-        context["pending_orders"] = Order.objects.filter(status="PENDING").count()
-        context["preparing_orders"] = Order.objects.filter(status="PREPARING").count()
-        context["completed_orders"] = Order.objects.filter(status="COMPLETED").count()
+        context["pending_orders"] = Order.objects.filter(status="pending").count()
+        context["preparing_orders"] = Order.objects.filter(status="preparing").count()
+        context["completed_orders"] = Order.objects.filter(status="served").count()
 
         # Revenue
         context["total_revenue"] = (
-            Payment.objects.filter(is_paid=True)
+            Payment.objects.filter(is_success=True)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
         context["weekly_revenue"] = (
-            Payment.objects.filter(is_paid=True, created_at__gte=last_7_days)
+            Payment.objects.filter(is_success=True, paid_at__gte=last_7_days)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
@@ -155,6 +157,30 @@ class OrdersDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     template_name = "administrator/orders.html"
     allowed_roles = ["admin"]
     ordering = ["-created_at"]
+
+    def get_queryset(self):
+        queryset = (
+            Order.objects.select_related("user", "table")
+            .prefetch_related("items__menu_item")
+            .order_by("-created_at")
+        )
+
+        table_filter = self.request.GET.get("table", "").strip()
+        customer_filter = self.request.GET.get("customer", "").strip()
+
+        if table_filter:
+            queryset = queryset.filter(table__number=table_filter)
+        if customer_filter:
+            queryset = queryset.filter(user__username__icontains=customer_filter)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["table_filter"] = self.request.GET.get("table", "").strip()
+        context["customer_filter"] = self.request.GET.get("customer", "").strip()
+        context["tables"] = Table.objects.order_by("number")
+        return context
 #Payments dashboard
 
 from payments.models import Payment
@@ -163,6 +189,26 @@ class PaymentsDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = Payment
     template_name = "administrator/payments.html"
     allowed_roles = ["admin"]
+
+    def get_queryset(self):
+        queryset = Payment.objects.select_related("order__user", "order__table").order_by("-paid_at")
+
+        table_filter = self.request.GET.get("table", "").strip()
+        customer_filter = self.request.GET.get("customer", "").strip()
+
+        if table_filter:
+            queryset = queryset.filter(order__table__number=table_filter)
+        if customer_filter:
+            queryset = queryset.filter(order__user__username__icontains=customer_filter)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["table_filter"] = self.request.GET.get("table", "").strip()
+        context["customer_filter"] = self.request.GET.get("customer", "").strip()
+        context["tables"] = Table.objects.order_by("number")
+        return context
 from accounts.models import User
 #Staff Management
 class StaffListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
@@ -194,14 +240,33 @@ class StaffCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request):
-        return render(request, "administrator/add_staff.html")
+        return render(request, "administrator/add_staff.html", {"form_data": {}})
 
     def post(self, request):
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+
+        context = {
+            "form_data": {
+                "username": username,
+                "email": email,
+            }
+        }
+
+        if User.objects.filter(username__iexact=username).exists():
+            context["error_message"] = "Username already exists. Please choose a different username."
+            return render(request, "administrator/add_staff.html", context)
+
+        if User.objects.filter(email__iexact=email).exists():
+            context["error_message"] = "Email already exists. Please use a different email address."
+            return render(request, "administrator/add_staff.html", context)
+
         User.objects.create(
-            username=request.POST["username"],
-            password=make_password(request.POST["password"]),
-            role=request.POST["role"],
-            email=request.POST["email"]
+            username=username,
+            password=make_password(password),
+            role="kitchen",
+            email=email
         )
         return redirect("administrator:admin-staff")
 class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
@@ -213,7 +278,9 @@ class StaffUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        user.role = request.POST["role"]
+        new_password = request.POST.get("password", "").strip()
+        if new_password:
+            user.password = make_password(new_password)
         user.save()
         return redirect("administrator:admin-staff")
 class StaffDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
@@ -268,6 +335,7 @@ class DeleteTableView(LoginRequiredMixin, RoleRequiredMixin, View):
         return redirect("administrator:admin-tables")
 from django.conf import settings
 from django.core.files.base import ContentFile
+from urllib.parse import urlencode
 
 def generate_qr_image(code):
     
@@ -285,7 +353,9 @@ class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
         qr_obj, created = TableQR.objects.get_or_create(table=table)
 
         if not qr_obj.qr_image:
-            url = f"http://10.219.82.251:8000/login/?next=/menu/?table={table.number}"
+            login_url = request.build_absolute_uri(reverse("accounts:login"))
+            next_url = f"{reverse('menu:menu-list')}?table={table.number}"
+            url = f"{login_url}?{urlencode({'next': next_url})}"
 
             
             qr = qrcode.make(url)

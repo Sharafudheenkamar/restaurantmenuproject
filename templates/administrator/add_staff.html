@@ -72,6 +72,15 @@ form{
     gap:18px;
 }
 
+.error-box{
+    padding:12px;
+    border-radius:10px;
+    background:rgba(255,23,68,.2);
+    border:1px solid rgba(255,255,255,.2);
+    color:#fff;
+    margin-bottom:16px;
+}
+
 input,select{
     padding:12px;
     border:none;
@@ -124,17 +133,17 @@ input:focus,select:focus{
 
 </div>
 
+{% if error_message %}
+<div class="error-box">{{ error_message }}</div>
+{% endif %}
+
 <form method="post">
 {% csrf_token %}
 
-<input type="text" name="username" placeholder="Username">
-<input type="email" name="email" placeholder="Email">
+<input type="text" name="username" placeholder="Username" value="{{ form_data.username|default:'' }}">
+<input type="email" name="email" placeholder="Email" value="{{ form_data.email|default:'' }}">
 <input type="password" name="password" placeholder="Password">
-
-<select name="role">
-<option value="kitchen">Kitchen</option>
-<option value="admin">Admin</option>
-</select>
+<input type="text" value="Kitchen" disabled>
 
 <button class="submit-btn">Create Staff</button>
 

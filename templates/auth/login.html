@@ -76,6 +76,17 @@ body{
     to{text-shadow:0 0 25px #fff,0 0 50px #b71c1c;}
 }
 
+.error-box{
+    margin:0 0 16px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.5);
+    background:rgba(255,23,68,.18);
+    color:#fff;
+    text-align:left;
+    font-size:13px;
+}
+
 /* inputs */
 .field{
     margin-bottom:22px;
@@ -164,9 +175,17 @@ body{
 
     <div class="title">🍗 LOGIN</div>
 
+    {% if form.non_field_errors %}
+      <div class="error-box">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <div class="field">
-        <input type="text" name="username" required placeholder=" ">
-        <label>Username</label>
+        <input type="text" name="username" required placeholder=" " value="{{ form.username.value|default:'' }}">
+        <label>Username or Email</label>
     </div>
 
     <div class="field">
@@ -178,6 +197,10 @@ body{
 
     <div class="link">
         No account? <a href="{%url 'accounts:signup' %}">Register</a>
+    </div>
+
+    <div class="link">
+        Forgot password? <a href="{% url 'accounts:password_reset' %}">Reset via Email</a>
     </div>
 
 </form>
