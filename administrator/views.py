@@ -13,6 +13,33 @@ class AdminDashboardView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
     template_name = "administrator/dashboard.html"
     allowed_roles = ["admin"]
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        orders = (
+            Order.objects.select_related("user", "table")
+            .prefetch_related("items__menu_item")
+            .order_by("-created_at")
+        )
+
+        table_filter = self.request.GET.get("table", "").strip()
+        customer_filter = self.request.GET.get("customer", "").strip()
+
+        if table_filter:
+            orders = orders.filter(table__number=table_filter)
+
+        if customer_filter:
+            orders = orders.filter(user__username__icontains=customer_filter)
+
+        context["orders"] = orders
+        context["table_filter"] = table_filter
+        context["customer_filter"] = customer_filter
+        context["tables"] = Table.objects.order_by("number")
+        context["customers"] = (
+            get_user_model().objects.filter(role="customer").order_by("username")
+        )
+        return context
+
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Sum
