@@ -194,6 +194,7 @@ tr:hover td{
 <td>
 {% if table.qr_map and table.qr_map.qr_image %}
 <img src="{{ table.qr_map.qr_image.url }}" class="qr-img"><br>
+<div style="margin:8px 0 10px;font-weight:600;color:#7a0019;">Administrator Code: {{ table.owner_id }}</div>
 <a href="{{ table.qr_map.qr_image.url }}" download class="download">
 ⬇ Download
 </a>

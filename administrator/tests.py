@@ -266,6 +266,15 @@ class AdminDashboardNavigationTests(TestCase):
             "http://example.com:9000/login/?next=%2Fmenu%2Ftable%2F" + str(table.id) + "%2F",
         )
 
+    def test_tables_page_shows_administrator_code_below_generated_qr(self):
+        table = Table.objects.create(owner=self.admin, number=10, capacity=4)
+        TableQR.objects.create(table=table, qr_image="qr/test.png")
+
+        response = self.client.get(reverse("administrator:admin-tables"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Administrator Code: {self.admin.id}")
+
 
 class AdminTableOwnershipTests(TestCase):
     def setUp(self):

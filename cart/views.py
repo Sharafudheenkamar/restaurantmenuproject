@@ -22,7 +22,7 @@ class AddToCartView(View):
 
         cart, _ = Cart.objects.get_or_create(user=request.user)
         table_id = request.session.get("table")
-        if table_id and not cart.table_id:
+        if table_id and cart.table_id != table_id:
             cart.table_id = table_id
             cart.save(update_fields=["table"])
 
@@ -104,7 +104,11 @@ class DummyCheckoutView(LoginRequiredMixin, View):
             if table_id:
                 table = Table.objects.filter(id=table_id).first()
 
-        if not table:
+        admin_id = request.session.get("menu_admin_id")
+        if not table and admin_id:
+            table = Table.objects.filter(owner_id=admin_id).order_by("number").first()
+
+        if not table and not admin_id:
             table = Table.objects.first()
 
         if not table:
