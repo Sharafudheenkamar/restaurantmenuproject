@@ -71,11 +71,19 @@ form{
     gap:18px;
 }
 
+.error-box{
+    padding:12px;
+    border-radius:10px;
+    background:rgba(255,23,68,.2);
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff;
+}
+
 label{
     color:#ffb3b3;
 }
 
-select{
+select,input{
     padding:12px;
     border:none;
     border-radius:10px;
@@ -83,7 +91,12 @@ select{
     color:white;
 }
 
-select:focus{
+select option{
+    background:#5a0f18;
+    color:#fff;
+}
+
+select:focus,input:focus{
     outline:none;
     box-shadow:0 0 12px red;
 }
@@ -140,11 +153,19 @@ select:focus{
 Username: <b>{{ staff.username }}</b>
 </div>
 
-<label>Role</label>
-<select name="role">
-<option value="kitchen" {% if staff.role == "kitchen" %}selected{% endif %}>Kitchen</option>
-<option value="admin" {% if staff.role == "admin" %}selected{% endif %}>Admin</option>
-</select>
+<div class="username-box">
+Role: <b>{{ staff.get_role_display }}</b>
+</div>
+
+{% if error_message %}
+<div class="error-box">{{ error_message }}</div>
+{% endif %}
+
+<label>Email</label>
+<input type="email" name="email" value="{{ form_data.email|default:staff.email }}" placeholder="Staff email">
+
+<label>New Password</label>
+<input type="password" name="password" placeholder="Leave blank to keep current password">
 
 <button class="submit-btn">Update Staff</button>
 

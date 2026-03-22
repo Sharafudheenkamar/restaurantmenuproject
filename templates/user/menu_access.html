@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enter Administrator Code</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Poppins',sans-serif;min-height:100vh;overflow:hidden;background:linear-gradient(135deg,#000,#b71c1c,#ff1744)}
+.food{position:absolute;width:70px;opacity:.9;animation:float 14s linear infinite}.food:nth-child(1){left:10%;animation-delay:0s}.food:nth-child(2){left:80%;animation-delay:4s}.food:nth-child(3){left:55%;animation-delay:8s}.food:nth-child(4){left:30%;animation-delay:11s}
+@keyframes float{0%{top:110%;transform:rotate(0deg)}100%{top:-20%;transform:rotate(360deg)}}
+.wrapper{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;z-index:2}
+.card,.confirm-card{width:min(420px,100%);padding:38px 34px;border-radius:22px;background:rgba(255,255,255,.08);backdrop-filter:blur(18px);box-shadow:0 20px 50px rgba(0,0,0,.55);text-align:center;color:#fff}
+.title{font-size:32px;font-weight:700;margin:0 0 14px;text-shadow:0 0 20px rgba(255,255,255,.45)}
+.subtitle{margin:0 0 24px;color:#ffe1e1;line-height:1.6}
+.field{margin-bottom:18px;text-align:left}.field label{display:block;margin-bottom:8px;font-weight:600}.field input{width:100%;box-sizing:border-box;padding:14px;border:none;border-radius:12px;background:rgba(255,255,255,.15);color:#fff;font-size:15px}.field input::placeholder{color:rgba(255,255,255,.7)}
+.btn,.ghost-btn{display:inline-block;width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;transition:.3s}
+.btn:hover,.ghost-btn:hover{transform:scale(1.03);box-shadow:0 0 25px rgba(255,0,0,.6)}
+.ghost-btn{background:rgba(255,255,255,.12);margin-top:12px}
+.error-box{margin:0 0 16px;padding:12px;border-radius:12px;background:rgba(255,23,68,.18);border:1px solid rgba(255,255,255,.4);text-align:left}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:5}
+.confirm-card p{margin:10px 0 18px;color:#ffe7e7}.confirm-actions{display:grid;gap:12px}
+.admin-pill{display:inline-block;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-weight:600}
+@media (max-width: 520px){.card,.confirm-card{padding:30px 22px}.title{font-size:28px}}
+</style>
+</head>
+<body>
+<img src="https://cdn-icons-png.flaticon.com/512/1046/1046784.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/5787/5787016.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/135/135763.png" class="food">
+<img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" class="food">
+
+<div class="wrapper">
+  <form method="post" class="card">
+    {% csrf_token %}
+    <h1 class="title">Admin Code</h1>
+    <p class="subtitle">Enter the administrator code to open that administrator's menu without scanning a QR code.</p>
+
+    {% if invalid_code %}
+      <div class="error-box">No administrator was found for that code. Please try again.</div>
+    {% endif %}
+
+    <div class="field">
+      <label for="admin_code">Administrator Code</label>
+      <input id="admin_code" type="text" name="admin_code" value="{{ entered_code|default:'' }}" placeholder="Enter admin code" required>
+    </div>
+
+    <button class="btn" type="submit">Continue</button>
+    <a href="{% url 'accounts:login' %}" class="ghost-btn">Back to Login</a>
+  </form>
+</div>
+
+{% if candidate_admin %}
+  <div class="confirm-overlay">
+    <div class="confirm-card">
+      <h2 class="title" style="font-size:28px;margin-bottom:8px">Confirm Administrator</h2>
+      <div class="admin-pill">{{ candidate_admin.username }}</div>
+      <p>Is this the administrator you want to order from? Confirm to open this menu. Choose cancel to return to login.</p>
+      <div class="confirm-actions">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="admin_code" value="{{ candidate_admin.id }}">
+          <input type="hidden" name="confirm" value="yes">
+          <button class="btn" type="submit">Yes, open menu</button>
+        </form>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="confirm" value="no">
+          <button class="ghost-btn" type="submit">No, go to login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endif %}
+</body>
+</html>

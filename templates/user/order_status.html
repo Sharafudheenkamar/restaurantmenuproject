@@ -1,22 +1,33 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Your Orders</h2>
-{% for order in object_list %}
-  <p>
-    Table {{ order.table.table_number }} -
-    Status: <b>{{ order.status }}</b>
-  </p>
-{% endfor %}
+
+{% if object_list %}
+  <table style="width:100%;border-collapse:collapse;background:#fff;">
+    <thead>
+      <tr style="background:#f1f1f1;">
+        <th style="padding:8px;border:1px solid #ddd;">Order ID</th>
+        <th style="padding:8px;border:1px solid #ddd;">Table</th>
+        <th style="padding:8px;border:1px solid #ddd;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in object_list %}
+      <tr>
+        <td style="padding:8px;border:1px solid #ddd;">#{{ order.id }}</td>
+        <td style="padding:8px;border:1px solid #ddd;">{{ order.table.number }}</td>
+        <td style="padding:8px;border:1px solid #ddd;">
+          {% if order.status == 'served' %}
+            <span style="color:#12692a;font-weight:700;">Served</span>
+          {% else %}
+            <span style="color:#c8102e;font-weight:700;">Not Served ({{ order.status|title }})</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No orders found.</p>
+{% endif %}
 {% endblock %}
-<p>Status: <span id="status">{{ order.status }}</span></p>
-
-<script>
-setInterval(()=>{
-  fetch('/order/status/{{ order.id }}/')
-    .then(res=>res.json())
-    .then(data=>{
-      document.getElementById('status').innerText = data.status;
-    })
-},3000);
-</script>
-
