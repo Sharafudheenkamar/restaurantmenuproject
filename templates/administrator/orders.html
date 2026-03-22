@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Orders</title>
+<style>body{font-family:Poppins,Arial;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:#fff;margin:0;padding:20px}.wrap{max-width:1100px;margin:auto;background:rgba(255,255,255,.1);padding:18px;border-radius:16px}.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.filters input,.filters select{padding:10px;border:none;border-radius:8px;background:rgba(255,255,255,.18);color:#fff}.filters button,a.btn{padding:10px 12px;border-radius:8px;border:none;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;text-decoration:none}table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.08)}th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left}th{background:rgba(0,0,0,.3)}</style>
+</head><body><div class="wrap"><h2>📦 Orders</h2>
+<form method="get" class="filters">
+<select name="table"><option value="">All Tables</option>{% for table in tables %}<option value="{{ table.number }}" {% if table_filter == table.number|stringformat:'s' %}selected{% endif %}>Table {{ table.number }}</option>{% endfor %}</select>
+<input type="text" name="customer" value="{{ customer_filter }}" placeholder="Customer">
+<button type="submit">Filter</button>
+<a href="{% url 'administrator:admin-orders' %}" class="btn">Reset</a>
+<a href="{% url 'administrator:admin-dashboard' %}" class="btn">Back</a>
+</form>
+<table><thead><tr><th>Order</th><th>Customer</th><th>Table</th><th>Items</th><th>Status</th><th>Created</th></tr></thead><tbody>
+{% for order in object_list %}<tr><td>#{{ order.id }}</td><td>{{ order.user.username|default:'-' }}</td><td>Table {{ order.table.number }}</td><td>{% for item in order.items.all %}{{ item.menu_item.name }} x {{ item.quantity }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</td><td>{{ order.status|title }}</td><td>{{ order.created_at }}</td></tr>{% empty %}<tr><td colspan="6">No orders found.</td></tr>{% endfor %}
+</tbody></table></div></body></html>
