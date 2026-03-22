@@ -306,7 +306,7 @@ class AdminTableListView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tables"] = Table.objects.all().order_by("number")
+        context["tables"] = Table.objects.filter(owner=self.request.user)
         context["qr_map"] = {
             qr.table_id: qr for qr in TableQR.objects.select_related("table")
         }
@@ -322,7 +322,7 @@ class AddTableView(LoginRequiredMixin, RoleRequiredMixin, View):
         number = request.POST.get("number")
         capacity = request.POST.get("capacity")
 
-        Table.objects.create(number=number, capacity=capacity)
+        Table.objects.create(owner=request.user, number=number, capacity=capacity)
         return redirect("administrator:admin-tables")
 
 
@@ -331,7 +331,7 @@ class DeleteTableView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def post(self, request, pk):
-        Table.objects.get(id=pk).delete()
+        get_object_or_404(Table, id=pk, owner=request.user).delete()
         return redirect("administrator:admin-tables")
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -348,7 +348,7 @@ class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def post(self, request, pk):
-        table = get_object_or_404(Table, id=pk)
+        table = get_object_or_404(Table, id=pk, owner=request.user)
         
         qr_obj, created = TableQR.objects.get_or_create(table=table)
 
