@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
+from django.urls import reverse
 
 
 
@@ -100,6 +101,9 @@ class MenuManageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     template_name = "administrator/menu_list.html"
     allowed_roles = ["admin"]
 
+    def get_queryset(self):
+        return MenuItem.objects.filter(owner=self.request.user).select_related("category")
+
 #Add Item
 
 from django.views import View
@@ -116,6 +120,7 @@ class MenuCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def post(self, request):
         MenuItem.objects.create(
+            owner=request.user,
             name=request.POST["name"],
             price=request.POST["price"],
             category_id=request.POST["category"],
@@ -127,13 +132,13 @@ class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        item = MenuItem.objects.get(id=pk)
+        item = get_object_or_404(MenuItem, id=pk, owner=request.user)
         return render(request,"administrator/menu_edit.html",
             {"item": item, "categories": Category.objects.all()}
         )
 
     def post(self, request, pk):
-        item = MenuItem.objects.get(id=pk)
+        item = get_object_or_404(MenuItem, id=pk, owner=request.user)
         item.name = request.POST["name"]
         item.price = request.POST["price"]
         item.category_id = request.POST["category"]
@@ -146,7 +151,7 @@ class MenuDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        MenuItem.objects.get(id=pk).delete()
+        get_object_or_404(MenuItem, id=pk, owner=request.user).delete()
         return redirect("administrator:admin-menu")
 #Qr generator view
 import qrcode
@@ -332,7 +337,7 @@ class AdminTableListView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tables"] = Table.objects.all().order_by("number")
+        context["tables"] = Table.objects.filter(owner=self.request.user)
         context["qr_map"] = {
             qr.table_id: qr for qr in TableQR.objects.select_related("table")
         }
@@ -348,7 +353,7 @@ class AddTableView(LoginRequiredMixin, RoleRequiredMixin, View):
         number = request.POST.get("number")
         capacity = request.POST.get("capacity")
 
-        Table.objects.create(number=number, capacity=capacity)
+        Table.objects.create(owner=request.user, number=number, capacity=capacity)
         return redirect("administrator:admin-tables")
 
 
@@ -357,10 +362,11 @@ class DeleteTableView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def post(self, request, pk):
-        Table.objects.get(id=pk).delete()
+        get_object_or_404(Table, id=pk, owner=request.user).delete()
         return redirect("administrator:admin-tables")
 from django.conf import settings
 from django.core.files.base import ContentFile
+from urllib.parse import urlencode
 
 def generate_qr_image(code):
     
@@ -373,12 +379,14 @@ class GenerateQRView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def post(self, request, pk):
-        table = get_object_or_404(Table, id=pk)
+        table = get_object_or_404(Table, id=pk, owner=request.user)
         
         qr_obj, created = TableQR.objects.get_or_create(table=table)
 
         if not qr_obj.qr_image:
-            url = f"http://10.219.82.251:8000/login/?next=/menu/?table={table.number}"
+            login_url = request.build_absolute_uri(reverse("accounts:login"))
+            next_url = reverse('menu:table-menu', args=[table.id])
+            url = f"{login_url}?{urlencode({'next': next_url})}"
 
             
             qr = qrcode.make(url)

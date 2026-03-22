@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
-from menu.models import Category, MenuItem, Table
+from menu.models import Category, MenuItem, Table, TableQR
 from orders.models import Order, OrderItem
 from payments.models import Payment
 
@@ -15,6 +16,12 @@ class AdminDashboardNavigationTests(TestCase):
             password="pass12345",
             role="admin",
             email="admin@example.com",
+        )
+        self.other_admin = user_model.objects.create_user(
+            username="admin2",
+            password="pass12345",
+            role="admin",
+            email="admin2@example.com",
         )
         self.customer1 = user_model.objects.create_user(
             username="alice",
@@ -29,10 +36,11 @@ class AdminDashboardNavigationTests(TestCase):
             email="bob@example.com",
         )
 
-        table1 = Table.objects.create(number=1, capacity=4)
-        table2 = Table.objects.create(number=2, capacity=4)
+        table1 = Table.objects.create(owner=self.admin, number=1, capacity=4)
+        table2 = Table.objects.create(owner=self.admin, number=2, capacity=4)
+        self.other_table = Table.objects.create(owner=self.other_admin, number=1, capacity=6)
         category = Category.objects.create(name="Main")
-        item = MenuItem.objects.create(category=category, name="Burger", price="100.00", is_available=True)
+        item = MenuItem.objects.create(owner=self.admin, category=category, name="Burger", price="100.00", is_available=True)
 
         order1 = Order.objects.create(user=self.customer1, table=table1, status="pending")
         order2 = Order.objects.create(user=self.customer2, table=table2, status="served")
@@ -136,3 +144,81 @@ class AdminDashboardNavigationTests(TestCase):
         self.customer1.refresh_from_db()
         self.assertTrue(self.customer1.check_password("newpass123"))
         self.assertEqual(self.customer1.role, "customer")
+
+    def test_generate_qr_uses_current_request_host(self):
+        table = Table.objects.create(owner=self.admin, number=9, capacity=4)
+
+        class DummyQR:
+            def save(self, buffer, format="PNG"):
+                buffer.write(b"fake-png")
+
+        with patch("administrator.views.qrcode.make", return_value=DummyQR()) as mock_make:
+            response = self.client.post(
+                reverse("administrator:generate-qr", args=[table.id]),
+                HTTP_HOST="example.com:9000",
+            )
+
+        self.assertEqual(response.status_code, 302)
+        qr_obj = TableQR.objects.get(table=table)
+        self.assertTrue(bool(qr_obj.qr_image))
+        generated_url = mock_make.call_args[0][0]
+        self.assertIn("http://example.com:9000/login/", generated_url)
+        self.assertIn("next=%2Fmenu%2Ftable%2F" + str(table.id) + "%2F", generated_url)
+
+
+class AdminTableOwnershipTests(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.admin = user_model.objects.create_user(
+            username="owner_admin",
+            password="pass12345",
+            role="admin",
+            email="owner_admin@example.com",
+        )
+        self.other_admin = user_model.objects.create_user(
+            username="other_admin",
+            password="pass12345",
+            role="admin",
+            email="other_admin@example.com",
+        )
+        self.owned_table = Table.objects.create(owner=self.admin, number=11, capacity=4)
+        self.other_table = Table.objects.create(owner=self.other_admin, number=99, capacity=8)
+        self.client.login(username="owner_admin", password="pass12345")
+
+    def test_table_list_only_shows_logged_in_admin_tables(self):
+        response = self.client.get(reverse("administrator:admin-tables"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "11")
+        self.assertContains(response, "4")
+        self.assertNotContains(response, "99")
+
+    def test_add_table_assigns_logged_in_admin_as_owner(self):
+        response = self.client.post(
+            reverse("administrator:add-table"),
+            {"number": "12", "capacity": "2"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        created_table = Table.objects.get(owner=self.admin, number=12)
+        self.assertEqual(created_table.capacity, 2)
+
+    def test_delete_table_cannot_remove_other_admin_table(self):
+        response = self.client.post(reverse("administrator:delete-table", args=[self.other_table.id]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Table.objects.filter(id=self.other_table.id).exists())
+
+    def test_generate_qr_cannot_access_other_admin_table(self):
+        response = self.client.post(reverse("administrator:generate-qr", args=[self.other_table.id]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(TableQR.objects.filter(table=self.other_table).exists())
+
+    def test_menu_edit_cannot_access_other_admin_item(self):
+        category = Category.objects.create(name="Shared")
+        other_item = MenuItem.objects.create(owner=self.other_admin, category=category, name="Secret Dish", price="42.00", is_available=True)
+
+        response = self.client.get(reverse("administrator:admin-menu-edit", args=[other_item.id]))
+
+        self.assertEqual(response.status_code, 404)
