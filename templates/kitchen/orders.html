@@ -1,20 +1,112 @@
-<h2>🍳 Kitchen Orders</h2>
-
-{% for order in orders %}
-  <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px">
-    <h4>Table {{ order.table.table_number }}</h4>
-    <p>Status: <b>{{ order.status }}</b></p>
-
-    <ul>
-      {% for item in order.items.all %}
-        <li>{{ item.menu_item.name }} × {{ item.quantity }}</li>
-      {% endfor %}
-    </ul>
-
-    <a href="{% url 'update-order' order.id %}">
-      Update Status
-    </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:#fff;min-height:100vh}
+.wrap{max-width:1200px;margin:0 auto;padding:24px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.title{font-size:32px;font-weight:700;text-shadow:0 0 18px rgba(255,255,255,.3)}
+.btn{display:inline-block;border:none;padding:10px 16px;border-radius:10px;color:#fff;text-decoration:none;font-weight:600;cursor:pointer;background:linear-gradient(45deg,#ff1744,#b71c1c)}
+.panel{margin-top:18px;background:rgba(255,255,255,.1);border-radius:18px;padding:18px;backdrop-filter:blur(14px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end}
+label{font-size:14px;font-weight:600}
+select{width:100%;padding:8px;border-radius:8px;border:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+.card{background:rgba(0,0,0,.28);padding:14px;border-radius:14px}
+.card h4{margin:0 0 8px}.muted{color:#fcdada;font-size:13px}
+.status{font-weight:700}.served{color:#81ff9f}.not{color:#ffd2d2}
+ul{margin:8px 0 12px;padding-left:18px}
+.empty{padding:16px;background:rgba(255,255,255,.08);border-radius:10px}
+.section-title{margin:6px 0 10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h2 class="title">🍳 Kitchen Dashboard</h2>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn">Logout</button>
+    </form>
   </div>
-{% empty %}
-  <p>No active orders 🎉</p>
-{% endfor %}
+
+  <div class="panel">
+    <h3 class="section-title">Filter Orders</h3>
+    <form method="get" class="filters">
+      <div>
+        <label for="customer">Customer</label>
+        <select id="customer" name="customer">
+          <option value="">All Customers</option>
+          {% for c in customers %}
+            <option value="{{ c.id }}" {% if selected_customer == c.id|stringformat:'s' %}selected{% endif %}>{{ c.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label for="table">Table</label>
+        <select id="table" name="table">
+          <option value="">All Tables</option>
+          {% for t in tables %}
+            <option value="{{ t.id }}" {% if selected_table == t.id|stringformat:'s' %}selected{% endif %}>Table {{ t.number }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="btn">Apply Filters</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h3 class="section-title">Active Kitchen Orders</h3>
+    <div class="grid">
+      {% for order in active_orders %}
+        <div class="card">
+          <h4>Order #{{ order.id }} - Table {{ order.table.number }}</h4>
+          <div class="muted">Customer: {{ order.user.username }}</div>
+          <p>Status: <span class="status not">{{ order.status|title }}</span></p>
+          <ul>
+            {% for item in order.items.all %}
+              <li>{{ item.menu_item.name }} × {{ item.quantity }}</li>
+            {% empty %}
+              <li>No items</li>
+            {% endfor %}
+          </ul>
+          <a href="{% url 'update-order' order.id %}" class="btn">Update Status</a>
+        </div>
+      {% empty %}
+        <div class="empty">No active orders 🎉</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3 class="section-title">Order History (Served)</h3>
+    <div class="grid">
+      {% for order in served_orders %}
+        <div class="card">
+          <h4>Order #{{ order.id }} - Table {{ order.table.number }}</h4>
+          <div class="muted">Customer: {{ order.user.username }}</div>
+          <p>Status: <span class="status served">Served</span></p>
+          <ul>
+            {% for item in order.items.all %}
+              <li>{{ item.menu_item.name }} × {{ item.quantity }}</li>
+            {% empty %}
+              <li>No items</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% empty %}
+        <div class="empty">No served order history for selected filters.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+</body>
+</html>
