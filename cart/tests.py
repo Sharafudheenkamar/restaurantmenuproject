@@ -47,6 +47,12 @@ class CartFlowTests(TestCase):
         self.assertTrue(payload["success"])
         self.assertEqual(payload["count"], 0)
 
+    def test_cart_page_has_back_to_menu_button(self):
+        response = self.client.get(reverse("cart-page"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Back to Menu")
+        self.assertContains(response, reverse("menu:menu-list"))
+
     def test_menu_badge_and_total_reset_after_cart_item_deleted(self):
         self.client.post(reverse("cart-add"), {"item_id": self.item.id, "qty": 1})
         cart = Cart.objects.get(user=self.user)

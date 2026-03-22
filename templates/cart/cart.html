@@ -17,7 +17,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
 .btn-success{background:#1b8f3a;color:#fff}.btn-success:hover{background:#12692a}
 .total-box{margin-top:20px;font-size:20px;font-weight:bold;color:#c8102e}
 .empty-box{background:#fff;padding:40px;border-radius:12px;text-align:center;font-size:18px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
-.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px}.alert-success{background:#d6f4df;color:#12692a}.actions{display:flex;gap:10px;flex-wrap:wrap}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px}.alert-success{background:#d6f4df;color:#12692a}.actions{display:flex;gap:10px;flex-wrap:wrap}.link-btn{text-decoration:none;display:inline-block}
 </style>
 </head>
 <body>
@@ -25,6 +25,10 @@ body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
 <div class="cart-head">
   <h2 class="cart-title">Your Cart</h2>
   <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
+</div>
+
+<div class="actions" style="margin-bottom:16px;">
+  <a href="{% url 'menu:menu-list' %}" class="btn btn-main link-btn">⬅ Back to Menu</a>
 </div>
 
 {% if checkout_error %}
