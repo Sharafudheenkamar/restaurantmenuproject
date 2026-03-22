@@ -53,7 +53,7 @@ class AdminDashboardNavigationTests(TestCase):
         table1 = Table.objects.create(owner=self.admin, number=1, capacity=4)
         table2 = Table.objects.create(owner=self.admin, number=2, capacity=4)
         self.other_table = Table.objects.create(owner=self.other_admin, number=9, capacity=6)
-        category = Category.objects.create(name="Main")
+        category = Category.objects.create(owner=self.admin, name="Main")
         item = MenuItem.objects.create(owner=self.admin, category=category, name="Burger", price="100.00", is_available=True)
 
         order1 = Order.objects.create(user=self.customer1, table=table1, status="pending")
@@ -196,6 +196,29 @@ class AdminDashboardNavigationTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_category_list_only_shows_logged_in_admin_categories(self):
+        own_category = Category.objects.create(owner=self.admin, name="Own Category")
+        Category.objects.create(owner=self.other_admin, name="Other Category")
+
+        response = self.client.get(reverse("administrator:category-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, own_category.name)
+        self.assertNotContains(response, "Other Category")
+
+    def test_add_category_assigns_logged_in_admin_as_owner(self):
+        response = self.client.post(reverse("administrator:category-add"), {"name": "New Category"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Category.objects.filter(owner=self.admin, name="New Category").exists())
+
+    def test_cannot_edit_other_admin_category(self):
+        foreign_category = Category.objects.create(owner=self.other_admin, name="Foreign Category")
+
+        response = self.client.get(reverse("administrator:category-edit", args=[foreign_category.id]))
+
+        self.assertEqual(response.status_code, 404)
+
     def test_generate_qr_uses_current_request_host(self):
         table = Table.objects.create(owner=self.admin, number=9, capacity=4)
 
@@ -267,7 +290,7 @@ class AdminTableOwnershipTests(TestCase):
         self.assertFalse(TableQR.objects.filter(table=self.other_table).exists())
 
     def test_menu_edit_cannot_access_other_admin_item(self):
-        category = Category.objects.create(name="Shared")
+        category = Category.objects.create(owner=self.other_admin, name="Shared")
         other_item = MenuItem.objects.create(owner=self.other_admin, category=category, name="Secret Dish", price="42.00", is_available=True)
 
         response = self.client.get(reverse("administrator:admin-menu-edit", args=[other_item.id]))

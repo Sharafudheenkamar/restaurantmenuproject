@@ -13,8 +13,8 @@ class MenuViewTests(TestCase):
         self.user = user_model.objects.create_user(username="menuuser", password="pass12345")
         self.admin1 = user_model.objects.create_user(username="menuadmin1", password="pass12345", role="admin")
         self.admin2 = user_model.objects.create_user(username="menuadmin2", password="pass12345", role="admin")
-        self.cat1 = Category.objects.create(name="Starters")
-        self.cat2 = Category.objects.create(name="Desserts")
+        self.cat1 = Category.objects.create(owner=self.admin1, name="Starters")
+        self.cat2 = Category.objects.create(owner=self.admin2, name="Desserts")
         self.item1 = MenuItem.objects.create(
             owner=self.admin1,
             category=self.cat1,
@@ -79,3 +79,11 @@ class MenuViewTests(TestCase):
         self.client.get(reverse("menu:table-menu", args=[self.table1.id]))
 
         self.assertEqual(self.client.session.get("table"), self.table1.id)
+
+
+    def test_table_menu_only_shows_table_owner_categories(self):
+        response = self.client.get(reverse("menu:table-menu", args=[self.table1.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.cat1.name)
+        self.assertNotContains(response, self.cat2.name)

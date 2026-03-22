@@ -112,7 +112,7 @@ class MenuCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
 
     def get(self, request):
         return render(request,"administrator/menu_add.html",
-            {"categories": Category.objects.all()}
+            {"categories": Category.objects.filter(owner=request.user).order_by("name")}
         )
 
     def post(self, request):
@@ -131,7 +131,7 @@ class MenuUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     def get(self, request, pk):
         item = get_object_or_404(MenuItem, id=pk, owner=request.user)
         return render(request,"administrator/menu_edit.html",
-            {"item": item, "categories": Category.objects.all()}
+            {"item": item, "categories": Category.objects.filter(owner=request.user).order_by("name")}
         )
 
     def post(self, request, pk):
@@ -416,7 +416,7 @@ class CategoryListView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request):
-        categories = Category.objects.all().order_by("name")
+        categories = Category.objects.filter(owner=request.user).order_by("name")
         return render(request, "administrator/categories/list.html", {
             "categories": categories
         })
@@ -433,7 +433,7 @@ class CategoryCreateView(LoginRequiredMixin, RoleRequiredMixin, View):
         name = request.POST.get("name")
 
         if name:
-            Category.objects.create(name=name)
+            Category.objects.create(owner=request.user, name=name)
 
         return redirect("administrator:category-list")
 
@@ -443,13 +443,13 @@ class CategoryUpdateView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def get(self, request, pk):
-        category = get_object_or_404(Category, pk=pk)
+        category = get_object_or_404(Category, pk=pk, owner=request.user)
         return render(request, "administrator/categories/edit.html", {
             "category": category
         })
 
     def post(self, request, pk):
-        category = get_object_or_404(Category, pk=pk)
+        category = get_object_or_404(Category, pk=pk, owner=request.user)
 
         category.name = request.POST.get("name")
         category.save()
@@ -462,6 +462,6 @@ class CategoryDeleteView(LoginRequiredMixin, RoleRequiredMixin, View):
     allowed_roles = ["admin"]
 
     def post(self, request, pk):
-        category = get_object_or_404(Category, pk=pk)
+        category = get_object_or_404(Category, pk=pk, owner=request.user)
         category.delete()
         return redirect("administrator:category-list")

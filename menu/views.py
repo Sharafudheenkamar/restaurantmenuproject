@@ -36,7 +36,7 @@ class TodayMenuView(ListView):
         context = super().get_context_data(**kwargs)
         category_queryset = Category.objects.all()
         if self.current_table and self.current_table.owner_id:
-            category_queryset = category_queryset.filter(menuitem__owner=self.current_table.owner).distinct()
+            category_queryset = category_queryset.filter(owner=self.current_table.owner)
         context["categories"] = category_queryset.order_by("name")
         context["selected_category"] = self.request.GET.get("category", "all")
         context["current_table"] = self.current_table
