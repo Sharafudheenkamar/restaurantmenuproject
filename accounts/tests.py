@@ -44,6 +44,11 @@ class ProfileDashboardTests(TestCase):
         self.assertContains(response, reverse("accounts:password_change"))
         self.assertContains(response, "Change Password")
 
+    def test_profile_uses_post_logout_form(self):
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertContains(response, 'form method="post" action="{}"'.format(reverse("accounts:logout")))
+        self.assertContains(response, "Logout")
+
 
 class AuthenticationFlowTests(TestCase):
     def setUp(self):
@@ -99,3 +104,10 @@ class AuthenticationFlowTests(TestCase):
             {"username": "customer2@example.com", "password": temp_password},
         )
         self.assertEqual(response.status_code, 302)
+
+    def test_password_change_page_uses_menu_style_theme(self):
+        self.client.login(username="customer2", password="pass12345")
+        response = self.client.get(reverse("accounts:password_change"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "linear-gradient(135deg,#000,#b71c1c,#ff1744)")
+        self.assertContains(response, "Back to Dashboard")
