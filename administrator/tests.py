@@ -236,8 +236,10 @@ class AdminDashboardNavigationTests(TestCase):
         qr_obj = TableQR.objects.get(table=table)
         self.assertTrue(bool(qr_obj.qr_image))
         generated_url = mock_make.call_args[0][0]
-        self.assertIn("http://example.com:9000/login/", generated_url)
-        self.assertIn("next=%2Fmenu%2Ftable%2F" + str(table.id) + "%2F", generated_url)
+        self.assertEqual(
+            generated_url,
+            "http://example.com:9000/login/?next=%2Fmenu%2Ftable%2F" + str(table.id) + "%2F",
+        )
 
 
 class AdminTableOwnershipTests(TestCase):

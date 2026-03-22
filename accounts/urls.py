@@ -4,6 +4,7 @@ from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordResetDoneView,
 )
+from django.views.generic import RedirectView
 from django.urls import path, reverse_lazy
 
 from .views import CustomLoginView, ForgotPasswordView, ProfileView, SignupView
@@ -11,7 +12,7 @@ from .views import CustomLoginView, ForgotPasswordView, ProfileView, SignupView
 urlpatterns = [
     path("signup/", SignupView.as_view(), name="signup"),
     path("login/", CustomLoginView.as_view(), name="login"),
-    path("", CustomLoginView.as_view(), name="login"),
+    path("", RedirectView.as_view(pattern_name="accounts:login", permanent=False), name="home"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("password-reset/", ForgotPasswordView.as_view(), name="password_reset"),
