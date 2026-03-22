@@ -1,3 +1,4 @@
+from cart.models import Cart
 from django.views.generic import ListView
 from .models import Category, MenuItem
 
@@ -24,4 +25,8 @@ class TodayMenuView(ListView):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all().order_by("name")
         context["selected_category"] = self.request.GET.get("category", "all")
+
+        cart = Cart.objects.filter(user=self.request.user).first() if self.request.user.is_authenticated else None
+        context["cart_count"] = cart.items.count() if cart else 0
+        context["cart_total"] = cart.total() if cart else 0
         return context

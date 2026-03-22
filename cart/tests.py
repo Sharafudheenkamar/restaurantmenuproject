@@ -47,6 +47,18 @@ class CartFlowTests(TestCase):
         self.assertTrue(payload["success"])
         self.assertEqual(payload["count"], 0)
 
+    def test_menu_badge_and_total_reset_after_cart_item_deleted(self):
+        self.client.post(reverse("cart-add"), {"item_id": self.item.id, "qty": 1})
+        cart = Cart.objects.get(user=self.user)
+        cart_item = cart.items.get(item=self.item)
+
+        self.client.post(reverse("cart-remove", args=[cart_item.id]))
+        response = self.client.get(reverse("menu:menu-list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="cartCount">0<')
+        self.assertContains(response, '0.00')
+
     def test_dummy_checkout_creates_order_and_payment(self):
         session = self.client.session
         session["table"] = self.table.id

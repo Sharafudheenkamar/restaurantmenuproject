@@ -29,9 +29,18 @@ class MakePaymentView(LoginRequiredMixin, TemplateView):
             )['total'] or 0
         )
 
+        order_items = order.items.select_related('menu_item').all()
+
         context['order'] = order
         context['amount'] = total_amount
-        context['order_items'] = order.items.select_related('menu_item').all()
+        context['order_items'] = [
+            {
+                'menu_item': item.menu_item,
+                'quantity': item.quantity,
+                'subtotal': item.menu_item.price * item.quantity,
+            }
+            for item in order_items
+        ]
         context['payment'] = Payment.objects.filter(order=order).first()
         return context
 

@@ -26,7 +26,7 @@ body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg
 .cart-float{position:fixed;bottom:90px;right:25px;background:linear-gradient(45deg,#ff1744,#b71c1c);width:70px;height:70px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:26px;cursor:pointer;box-shadow:0 5px 25px rgba(0,0,0,.7);z-index:2}
 .badge{position:absolute;top:-5px;right:-5px;background:#fff;color:#b71c1c;font-size:13px;padding:3px 8px;border-radius:50%;font-weight:bold;min-width:18px;text-align:center}
 .total-bar{position:fixed;bottom:0;left:0;width:100%;background:#000;padding:14px;text-align:center;font-size:18px;font-weight:bold;box-shadow:0 -3px 15px rgba(0,0,0,.7)}
-.top-actions{position:fixed;top:20px;right:25px;z-index:3;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.logout-form{margin:0}.logout-btn,.history-btn,.email-btn{border:none;padding:10px 18px;border-radius:10px;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;font-weight:600;cursor:pointer;transition:.3s;box-shadow:0 0 15px rgba(0,0,0,.6);text-decoration:none;display:inline-block}.history-btn{background:linear-gradient(45deg,#3b82f6,#1d4ed8)}.email-btn{background:linear-gradient(45deg,#0ea5e9,#0369a1)}
+.top-actions{position:fixed;top:20px;right:25px;z-index:3;display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.logout-form{margin:0}.logout-btn,.history-btn,.email-btn{border:none;padding:10px 18px;border-radius:10px;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;font-weight:600;cursor:pointer;transition:.3s;box-shadow:0 0 15px rgba(0,0,0,.6);text-decoration:none;display:inline-block}.logout-btn:hover,.history-btn:hover,.email-btn:hover{transform:scale(1.07);box-shadow:0 0 25px rgba(255,0,0,.8)}
 .empty{grid-column:1 / -1;text-align:center;padding:30px;background:rgba(255,255,255,.08);border-radius:12px}
 </style>
 </head>
@@ -71,7 +71,7 @@ body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg
 </div>
 
 <div class="cart-float" onclick="location.href='/cart/'">🛒<div class="badge" id="cartCount">{{ cart_count|default:0 }}</div></div>
-<div class="total-bar">Cart Total: ₹ <span id="totalPrice">0.00</span></div>
+<div class="total-bar">Cart Total: ₹ <span id="totalPrice">{{ cart_total|default:0|floatformat:2 }}</span></div>
 
 <script>
 function getCSRFToken(){return document.cookie.split('; ').find(row=>row.startsWith('csrftoken='))?.split('=')[1];}

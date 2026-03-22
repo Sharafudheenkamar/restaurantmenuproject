@@ -31,6 +31,8 @@ class MakePaymentViewTests(TestCase):
         self.assertContains(response, "Order Details")
         self.assertContains(response, "Pasta")
         self.assertContains(response, "Not Paid")
+        self.assertContains(response, "⬅ Back to Cart")
+        self.assertContains(response, "300.00")
 
     def test_post_payment_marks_payment_success(self):
         response = self.client.post(reverse("make-payment", args=[self.order.id]), {"method": "CASH"})
