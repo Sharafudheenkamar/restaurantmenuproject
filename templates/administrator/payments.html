@@ -1,3 +1,4 @@
+{% load tz %}
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Payments</title>
 <style>body{font-family:Poppins,Arial;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:#fff;margin:0;padding:20px}.wrap{max-width:1100px;margin:auto;background:rgba(255,255,255,.1);padding:18px;border-radius:16px}.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.filters input,.filters select{padding:10px;border:none;border-radius:8px;background:rgba(255,255,255,.18);color:#fff}.filters button,a.btn{padding:10px 12px;border-radius:8px;border:none;background:linear-gradient(45deg,#ff1744,#b71c1c);color:#fff;text-decoration:none}table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.08)}th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.12);text-align:left}th{background:rgba(0,0,0,.3)}.paid{color:#9cffb3}.unpaid{color:#ffd2d2}</style>
@@ -10,5 +11,5 @@
 <a href="{% url 'administrator:admin-dashboard' %}" class="btn">Back</a>
 </form>
 <table><thead><tr><th>Payment ID</th><th>Order</th><th>Customer</th><th>Table</th><th>Amount</th><th>Method</th><th>Status</th><th>Paid At</th></tr></thead><tbody>
-{% for payment in object_list %}<tr><td>#{{ payment.id }}</td><td>#{{ payment.order.id }}</td><td>{{ payment.order.user.username|default:'-' }}</td><td>Table {{ payment.order.table.number }}</td><td>₹{{ payment.amount }}</td><td>{{ payment.payment_method }}</td><td>{% if payment.is_success %}<span class="paid">Paid</span>{% else %}<span class="unpaid">Not Paid</span>{% endif %}</td><td>{{ payment.paid_at }}</td></tr>{% empty %}<tr><td colspan="8">No payments found.</td></tr>{% endfor %}
+{% for payment in object_list %}<tr><td>#{{ payment.id }}</td><td>#{{ payment.order.id }}</td><td>{{ payment.order.user.username|default:'-' }}</td><td>Table {{ payment.order.table.number }}</td><td>₹{{ payment.amount }}</td><td>{{ payment.payment_method }}</td><td>{% if payment.is_success %}<span class="paid">Paid</span>{% else %}<span class="unpaid">Not Paid</span>{% endif %}</td><td>{{ payment.paid_at|localtime|date:'d M Y, h:i A' }} IST</td></tr>{% empty %}<tr><td colspan="8">No payments found.</td></tr>{% endfor %}
 </tbody></table></div></body></html>
