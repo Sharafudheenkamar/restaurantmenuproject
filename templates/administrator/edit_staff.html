@@ -75,7 +75,7 @@ label{
     color:#ffb3b3;
 }
 
-select{
+select,input{
     padding:12px;
     border:none;
     border-radius:10px;
@@ -83,7 +83,12 @@ select{
     color:white;
 }
 
-select:focus{
+select option{
+    background:#5a0f18;
+    color:#fff;
+}
+
+select:focus,input:focus{
     outline:none;
     box-shadow:0 0 12px red;
 }
@@ -140,11 +145,12 @@ select:focus{
 Username: <b>{{ staff.username }}</b>
 </div>
 
-<label>Role</label>
-<select name="role">
-<option value="kitchen" {% if staff.role == "kitchen" %}selected{% endif %}>Kitchen</option>
-<option value="admin" {% if staff.role == "admin" %}selected{% endif %}>Admin</option>
-</select>
+<div class="username-box">
+Role: <b>{{ staff.get_role_display }}</b>
+</div>
+
+<label>New Password</label>
+<input type="password" name="password" placeholder="Leave blank to keep current password">
 
 <button class="submit-btn">Update Staff</button>
 

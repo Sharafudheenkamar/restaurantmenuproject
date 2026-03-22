@@ -1,13 +1,98 @@
-{% extends "base.html" %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#000,#b71c1c,#ff1744);color:#fff;min-height:100vh}
+.dashboard{max-width:1150px;margin:0 auto;padding:24px 20px 40px}
+.panel{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:18px;padding:20px;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.title{font-size:30px;font-weight:700;margin:0 0 16px;text-shadow:0 0 14px rgba(255,255,255,.35)}
+.meta{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+.meta span{background:rgba(0,0,0,.25);padding:8px 12px;border-radius:10px}
+.notice{margin:10px 0 16px;padding:10px 12px;background:#d6f4df;color:#12692a;border-radius:8px;font-weight:600}
+.table-wrap{overflow:auto;margin-top:10px}
+.table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.08);border-radius:12px;overflow:hidden}
+.table th,.table td{padding:12px;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:top}
+.table th{background:rgba(0,0,0,.35);text-align:left}
+.status-served{color:#79ff9c;font-weight:700}.status-pending{color:#ffd2d2;font-weight:700}
+.actions{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 16px;border-radius:10px;text-decoration:none;color:#fff;font-weight:600;background:linear-gradient(45deg,#ff1744,#b71c1c)}
+.empty{padding:16px;background:rgba(255,255,255,.08);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <div class="panel">
+    <h2 class="title">Customer Dashboard</h2>
 
-<div class="profile-card">
-    <h2>Profile</h2>
+    {% if order_confirmed %}
+      <div class="notice">✅ Order confirmed successfully with dummy payment.</div>
+    {% endif %}
 
-    <p><strong>Username:</strong> {{ request.user.username }}</p>
-    <p><strong>Email:</strong> {{ request.user.email }}</p>
+    <div class="meta">
+      <span><strong>Username:</strong> {{ request.user.username }}</span>
+      <span><strong>Email:</strong> {{ request.user.email }}</span>
+    </div>
 
-    <a href="{% url 'accounts:logout' %}" class="logout-btn">Logout</a>
+    <h3>Order History</h3>
+    {% if order_rows %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Table</th>
+              <th>Items</th>
+              <th>Payment</th>
+              <th>Created</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in order_rows %}
+              <tr>
+                <td>#{{ row.order.id }}</td>
+                <td>{{ row.order.table.number }}</td>
+                <td>
+                  {% for item in row.order.items.all %}
+                    {{ item.menu_item.name }} x {{ item.quantity }}{% if not forloop.last %}, {% endif %}
+                  {% empty %}
+                    -
+                  {% endfor %}
+                </td>
+                <td>
+                  {% if row.payment %}
+                    {{ row.payment.payment_method }} / ₹{{ row.payment.amount }}
+                  {% else %}
+                    Not Paid
+                  {% endif %}
+                </td>
+                <td>{{ row.order.created_at }}</td>
+                <td>
+                  {% if row.order.status == 'served' %}
+                    <span class="status-served">Served</span>
+                  {% else %}
+                    <span class="status-pending">Not Served ({{ row.order.status|title }})</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">No orders yet.</div>
+    {% endif %}
+
+    <div class="actions">
+      <a href="{% url 'menu:menu-list' %}" class="btn">Go to Menu</a>
+      <a href="{% url 'accounts:password_change' %}" class="btn">Change Password</a>
+      <a href="{% url 'accounts:logout' %}" class="btn">Logout</a>
+    </div>
+  </div>
 </div>
-
-{% endblock %}
+</body>
+</html>
