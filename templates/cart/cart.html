@@ -3,201 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <title>Your Cart</title>
-
 <style>
-body{
-    font-family:'Segoe UI',sans-serif;
-    background:#fff5f5;
-    padding:30px;
-}
-
-/* Title */
-.cart-title{
-    color:#c8102e;
-    margin-bottom:20px;
-}
-
-/* Table */
-.cart-table{
-    width:100%;
-    border-collapse:collapse;
-    background:#fff;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-}
-
-.cart-table th{
-    background:#c8102e;
-    color:#fff;
-    padding:14px;
-    text-align:left;
-}
-
-.cart-table td{
-    padding:14px;
-    border-bottom:1px solid #eee;
-}
-
-.cart-table tr:hover{
-    background:#fff0f0;
-}
-
-/* Buttons */
-.btn{
-    border:none;
-    padding:8px 14px;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:600;
-    transition:.2s;
-}
-
-.btn-danger{
-    background:#333;
-    color:white;
-}
-
-.btn-danger:hover{
-    background:black;
-}
-
-.btn-main{
-    background:#c8102e;
-    color:white;
-}
-
-.btn-main:hover{
-    background:#a50d24;
-    transform:scale(1.05);
-}
-
-/* Total */
-.total-box{
-    margin-top:20px;
-    font-size:20px;
-    font-weight:bold;
-    color:#c8102e;
-}
-
-/* Empty */
-.empty-box{
-    background:white;
-    padding:40px;
-    border-radius:12px;
-    text-align:center;
-    font-size:18px;
-    box-shadow:0 4px 10px rgba(0,0,0,.08);
-}
+body{font-family:'Segoe UI',sans-serif;background:#fff5f5;padding:30px}
+.cart-title{color:#c8102e;margin-bottom:20px}
+.cart-head{display:flex;align-items:center;justify-content:space-between}
+.badge{background:#c8102e;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700}
+.cart-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.cart-table th{background:#c8102e;color:#fff;padding:14px;text-align:left}
+.cart-table td{padding:14px;border-bottom:1px solid #eee}
+.btn{border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;transition:.2s}
+.btn-danger{background:#333;color:#fff}.btn-danger:hover{background:#000}
+.btn-main{background:#c8102e;color:#fff}.btn-main:hover{background:#a50d24}
+.btn-success{background:#1b8f3a;color:#fff}.btn-success:hover{background:#12692a}
+.total-box{margin-top:20px;font-size:20px;font-weight:bold;color:#c8102e}
+.empty-box{background:#fff;padding:40px;border-radius:12px;text-align:center;font-size:18px;box-shadow:0 4px 10px rgba(0,0,0,.08)}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:16px}.alert-success{background:#d6f4df;color:#12692a}.actions{display:flex;gap:10px;flex-wrap:wrap}
 </style>
 </head>
-
 <body>
 
 <h2 class="cart-title">Your Cart</h2>
 
+<div class="cart-head">
+  <div class="badge">Items: <span id="cart-count">{{ items|length }}</span></div>
+</div>
+
+{% if checkout_error %}
+  <div class="alert">Unable to checkout right now. Please scan a table QR and try again.</div>
+{% endif %}
+
 {% if items %}
-
 <table class="cart-table">
-<thead>
-<tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Price</th>
-<th>Subtotal</th>
-<th></th>
-</tr>
-</thead>
-
+<thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th><th></th></tr></thead>
 <tbody>
 {% for i in items %}
 <tr id="row-{{ i.id }}">
 <td>{{ i.item.name }}</td>
-
-<td>
-<strong>{{ i.quantity }}</strong>
-</td>
-
+<td><strong>{{ i.quantity }}</strong></td>
 <td>₹{{ i.item.price }}</td>
-
 <td><strong>₹{{ i.subtotal }}</strong></td>
-
-<td>
-<button class="btn btn-danger" onclick="removeItem({{ i.id }})">✖</button>
-</td>
+<td><button class="btn btn-danger" onclick="removeItem({{ i.id }})">✖</button></td>
 </tr>
 {% endfor %}
 </tbody>
 </table>
 
-
-<div class="total-box">
-Total: ₹ <span id="cart-total">{{ cart.total }}</span>
-</div>
-
+<div class="total-box">Total: ₹ <span id="cart-total">{{ cart.total }}</span></div>
 <br>
-
-<button class="btn btn-main" onclick="clearCart()">🗑 Clear Cart</button>
-
-{% else %}
-<div class="empty-box">
-🛒 Your cart is empty
+<div class="actions">
+  <button class="btn btn-main" onclick="clearCart()">🗑 Clear Cart</button>
+  <form method="post" action="{% url 'cart-checkout' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success">💳 Dummy Payment & Confirm Order</button>
+  </form>
 </div>
+{% else %}
+<div class="empty-box">🛒 Your cart is empty</div>
 {% endif %}
 
-
 <script>
-function getCookie(name){
-let cookieValue=null;
-if(document.cookie && document.cookie!==''){
-let cookies=document.cookie.split(';');
-for(let i=0;i<cookies.length;i++){
-let cookie=cookies[i].trim();
-if(cookie.substring(0,name.length+1)===(name+'=')){
-cookieValue=decodeURIComponent(cookie.substring(name.length+1));
-break;
-}
-}
-}
-return cookieValue;
-}
-
-const csrftoken = getCookie('csrftoken');
-
+function getCookie(name){let cookieValue=null;if(document.cookie&&document.cookie!==''){const cookies=document.cookie.split(';');for(let i=0;i<cookies.length;i++){const cookie=cookies[i].trim();if(cookie.substring(0,name.length+1)===(name+'=')){cookieValue=decodeURIComponent(cookie.substring(name.length+1));break;}}}return cookieValue;}
+const csrftoken=getCookie('csrftoken');
 
 function removeItem(id){
-fetch(`/cart/remove/${id}/`,{
-method:"POST",
-headers:{
-"X-CSRFToken":csrftoken,
-"Content-Type":"application/json"
+  fetch(`/cart/remove/${id}/`,{method:'POST',headers:{'X-CSRFToken':csrftoken,'Content-Type':'application/json'}})
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.success){
+      const row=document.getElementById(`row-${id}`);
+      if(row){row.remove();}
+      document.getElementById('cart-total').innerText=Number(data.total || 0).toFixed(2);
+      document.getElementById('cart-count').innerText=data.count;
+      if(data.count===0){location.reload();}
+    }
+  });
 }
-})
-.then(res=>res.json())
-.then(data=>{
-if(data.success){
-document.getElementById(`row-${id}`).remove();
-document.getElementById("cart-total").innerText=data.total;
-
-if(data.count==0)
-location.reload();
-}
-});
-}
-
 
 function clearCart(){
-fetch(`/cart/clear/`,{
-method:"POST",
-headers:{
-"X-CSRFToken":csrftoken,
-"Content-Type":"application/json"
-}
-})
-.then(res=>res.json())
-.then(()=>location.reload());
+  fetch('/cart/clear/',{method:'POST',headers:{'X-CSRFToken':csrftoken,'Content-Type':'application/json'}})
+  .then(res=>res.json())
+  .then(data=>{document.getElementById('cart-count').innerText=data.count; const totalEl=document.getElementById('cart-total'); if(totalEl){totalEl.innerText=Number(data.total || 0).toFixed(2);} location.reload();});
 }
 </script>
-
 </body>
 </html>

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
 
@@ -35,18 +36,18 @@ class AdminAnalyticsView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
 
         # Orders
         context["total_orders"] = Order.objects.count()
-        context["pending_orders"] = Order.objects.filter(status="PENDING").count()
-        context["preparing_orders"] = Order.objects.filter(status="PREPARING").count()
-        context["completed_orders"] = Order.objects.filter(status="COMPLETED").count()
+        context["pending_orders"] = Order.objects.filter(status="pending").count()
+        context["preparing_orders"] = Order.objects.filter(status="preparing").count()
+        context["completed_orders"] = Order.objects.filter(status="served").count()
 
         # Revenue
         context["total_revenue"] = (
-            Payment.objects.filter(is_paid=True)
+            Payment.objects.filter(is_success=True)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
         context["weekly_revenue"] = (
-            Payment.objects.filter(is_paid=True, created_at__gte=last_7_days)
+            Payment.objects.filter(is_success=True, paid_at__gte=last_7_days)
             .aggregate(total=Sum("amount"))["total"] or 0
         )
 
@@ -155,6 +156,30 @@ class OrdersDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     template_name = "administrator/orders.html"
     allowed_roles = ["admin"]
     ordering = ["-created_at"]
+
+    def get_queryset(self):
+        queryset = (
+            Order.objects.select_related("user", "table")
+            .prefetch_related("items__menu_item")
+            .order_by("-created_at")
+        )
+
+        table_filter = self.request.GET.get("table", "").strip()
+        customer_filter = self.request.GET.get("customer", "").strip()
+
+        if table_filter:
+            queryset = queryset.filter(table__number=table_filter)
+        if customer_filter:
+            queryset = queryset.filter(user__username__icontains=customer_filter)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["table_filter"] = self.request.GET.get("table", "").strip()
+        context["customer_filter"] = self.request.GET.get("customer", "").strip()
+        context["tables"] = Table.objects.order_by("number")
+        return context
 #Payments dashboard
 
 from payments.models import Payment
@@ -163,6 +188,26 @@ class PaymentsDashboardView(LoginRequiredMixin, RoleRequiredMixin, ListView):
     model = Payment
     template_name = "administrator/payments.html"
     allowed_roles = ["admin"]
+
+    def get_queryset(self):
+        queryset = Payment.objects.select_related("order__user", "order__table").order_by("-paid_at")
+
+        table_filter = self.request.GET.get("table", "").strip()
+        customer_filter = self.request.GET.get("customer", "").strip()
+
+        if table_filter:
+            queryset = queryset.filter(order__table__number=table_filter)
+        if customer_filter:
+            queryset = queryset.filter(order__user__username__icontains=customer_filter)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["table_filter"] = self.request.GET.get("table", "").strip()
+        context["customer_filter"] = self.request.GET.get("customer", "").strip()
+        context["tables"] = Table.objects.order_by("number")
+        return context
 from accounts.models import User
 #Staff Management
 class StaffListView(LoginRequiredMixin, RoleRequiredMixin, ListView):
